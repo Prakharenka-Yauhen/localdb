@@ -24,10 +24,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="localdb"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+            title: 'Local DB',
+            headerTitleAlign: "center",
+            headerShown: true,
+            headerStyle: {
+                backgroundColor: 'green',
+            },
+            headerTitleStyle: {
+                color: 'white',
+            },
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
         }}
       />
     </Tabs>
