@@ -1,17 +1,56 @@
-import {useCallback} from "react";
+import {useCallback, useState} from "react";
+import {database} from "@/watermelonDB";
+import {Collection} from "@nozbe/watermelondb";
+
+import {Order} from "@/watermelonDB/models";
 
 type UseLocalDBScreenProps = {
+    ordersList: Order[];
     getDBData: () => void;
     writeDBData: () => void;
-    updateDBData: () => void;
-    deleteDBData: () => void;
+    updateDBData: (post: Order) => void;
+    deleteDBData: (post: Order) => void;
 }
 
 export const useLocalDBScreen = (): UseLocalDBScreenProps => {
-    const getDBData = useCallback(() => {}, []);
-    const writeDBData = useCallback(() => {}, []);
-    const updateDBData = useCallback(() => {}, []);
-    const deleteDBData = useCallback(() => {}, []);
+    const [ordersList, setOrdersList] = useState<Order[]>([]);
 
-    return {getDBData, writeDBData, updateDBData, deleteDBData}
+    const getDBData = useCallback(async (): Promise<void> => {
+        const ordersCollection: Collection<Order> = database.get<Order>('orders');
+
+        const orders: Order[] = await ordersCollection.query().fetch();
+        setOrdersList(orders);
+    }, []);
+
+    const writeDBData = useCallback(async (): Promise<void> => {
+        const ordersCollection = database.get<Order>('orders');
+
+        await database.write(async (): Promise<void> => {
+            await ordersCollection.create((post: Order): void => {
+                post.title = 'Title2'
+                post.subtitle = 'Subtitle2'
+                post.body = 'Body2'
+                post.isPinned = false
+            })
+        })
+    }, []);
+
+    const updateDBData = useCallback(async (updatedPost: Order): Promise<void> => {
+        await database.write(async (): Promise<void> => {
+            await updatedPost.update((post: Order) => {
+                post.title = 'Title3'
+                post.subtitle = 'Subtitle3'
+                post.body = 'Body3'
+                post.isPinned = true
+            })
+        });
+    }, []);
+
+    const deleteDBData = useCallback(async (post: Order): Promise<void> => {
+        await database.write(async (): Promise<void> => {
+            await post.destroyPermanently();
+        });
+    }, []);
+
+    return {ordersList, getDBData, writeDBData, updateDBData, deleteDBData}
 }

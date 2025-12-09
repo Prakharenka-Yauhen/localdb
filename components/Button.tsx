@@ -8,7 +8,7 @@ type ButtonProps = {
 }
 
 export const Button = ({title, onPress, style}: ButtonProps): JSX.Element => {
-    return <Pressable onPress={onPress} style={[styles.container, style]} >
+    return <Pressable onPress={onPress} style={({ pressed }) => [styles.container, style, {opacity:pressed ? 0.5 : 1}]} >
         <Text style={styles.title}>{title}</Text>
     </Pressable>
 }
