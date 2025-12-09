@@ -1,13 +1,14 @@
 import {JSX} from "react";
-import {Pressable, StyleSheet, Text} from "react-native";
+import {Pressable, StyleSheet, Text, ViewStyle} from "react-native";
 
 type ButtonProps = {
     title: string;
     onPress: () => void;
+    style?: ViewStyle;
 }
 
-export const Button = ({title, onPress}: ButtonProps): JSX.Element => {
-    return <Pressable onPress={onPress} style={styles.container} >
+export const Button = ({title, onPress, style}: ButtonProps): JSX.Element => {
+    return <Pressable onPress={onPress} style={[styles.container, style]} >
         <Text style={styles.title}>{title}</Text>
     </Pressable>
 }
