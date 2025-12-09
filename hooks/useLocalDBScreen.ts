@@ -1,6 +1,5 @@
 import {useCallback, useState} from "react";
-import {database} from "@/watermelonDB";
-import {Collection} from "@nozbe/watermelondb";
+import {database, ordersCollection} from "@/watermelonDB";
 
 import {Order} from "@/watermelonDB/models";
 
@@ -16,15 +15,11 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const [ordersList, setOrdersList] = useState<Order[]>([]);
 
     const getDBData = useCallback(async (): Promise<void> => {
-        const ordersCollection: Collection<Order> = database.get<Order>('orders');
-
         const orders: Order[] = await ordersCollection.query().fetch();
         setOrdersList(orders);
     }, []);
 
     const writeDBData = useCallback(async (): Promise<void> => {
-        const ordersCollection = database.get<Order>('orders');
-
         await database.write(async (): Promise<void> => {
             await ordersCollection.create((post: Order): void => {
                 post.title = 'Title2'

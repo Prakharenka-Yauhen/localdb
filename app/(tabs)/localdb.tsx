@@ -1,30 +1,19 @@
-import {FlatList, ListRenderItemInfo, StyleSheet, Text, View} from "react-native";
-import {JSX, useCallback} from "react";
+import {StyleSheet, View} from "react-native";
+import {JSX} from "react";
 
 import {Button} from "@/components/Button";
 import {useLocalDBScreen} from "@/hooks/useLocalDBScreen";
-import {Order} from "@/watermelonDB/models";
+import OrdersList from "@/app/components/OrdersList";
 
 export default function LocalDBScreen(): JSX.Element {
-    const {ordersList, getDBData, writeDBData, updateDBData, deleteDBData} = useLocalDBScreen();
-
-    const renderItem = useCallback(({item}: ListRenderItemInfo<Order>): JSX.Element => {
-        return <View style={styles.listItem}>
-            <Text>{item.title}</Text>
-            <Text>{item.subtitle}</Text>
-            <Text>{item.body}</Text>
-            <Text>{item.isPinned ? 'true' : 'false'}</Text>
-            <Button title={'update'} onPress={(): void => updateDBData(item)} style={styles.updateButton} />
-            <Button title={'delete'} onPress={(): void => deleteDBData(item)} style={styles.deleteButton} />
-        </View>
-    }, [updateDBData, deleteDBData])
+    const {getDBData, writeDBData} = useLocalDBScreen();
 
     return <View style={styles.container}>
         <View style={styles.horizontal}>
             <Button title={'Get DB data'} onPress={getDBData} style={styles.getButton} />
             <Button title={'Write DB data'} onPress={writeDBData} style={styles.writeButton} />
         </View>
-        <FlatList data={ordersList} renderItem={renderItem} />
+        <OrdersList />
     </View>
 }
 
@@ -44,19 +33,5 @@ const styles = StyleSheet.create({
     },
     writeButton: {
         backgroundColor: 'green'
-    },
-    updateButton: {
-        backgroundColor: 'orange'
-    },
-    deleteButton: {
-        backgroundColor: 'red'
-    },
-    listItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-        borderBottomWidth: 1,
-        borderColor: 'lightgrey',
-        gap: 10
     }
 });
