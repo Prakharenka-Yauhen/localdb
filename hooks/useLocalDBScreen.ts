@@ -1,6 +1,6 @@
 import {useCallback, useState} from "react";
-import {database, ordersCollection} from "@/watermelonDB";
 
+import {database, ordersCollection} from "@/watermelonDB";
 import {Order} from "@/watermelonDB/models";
 
 type UseLocalDBScreenProps = {
@@ -9,6 +9,7 @@ type UseLocalDBScreenProps = {
     writeDBData: () => void;
     updateDBData: (post: Order) => void;
     deleteDBData: (post: Order) => void;
+    resetDBData: () => void;
 }
 
 export const useLocalDBScreen = (): UseLocalDBScreenProps => {
@@ -47,5 +48,11 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         });
     }, []);
 
-    return {ordersList, getDBData, writeDBData, updateDBData, deleteDBData}
+    const resetDBData = useCallback(async (): Promise<void> => {
+        await database.write(async (): Promise<void> => {
+            await database.unsafeResetDatabase();
+        });
+    }, []);
+
+    return {ordersList, getDBData, writeDBData, updateDBData, deleteDBData, resetDBData}
 }
