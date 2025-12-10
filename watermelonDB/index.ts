@@ -4,7 +4,7 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
 import schema from './schema'
 import migrations from './migrations'
-import {Contract, Order} from "./models";
+import {Contract, Order, Player} from "./models";
 
 // First, create the adapter to the underlying database:
 const adapter = new SQLiteAdapter({
@@ -25,7 +25,8 @@ const adapter = new SQLiteAdapter({
 // Then, make a Watermelon database from it!
 export const database = new Database({
     adapter,
-    modelClasses: [Contract, Order],
+    modelClasses: [Contract, Order, Player],
 })
 
 export const ordersCollection = database.get<Order>('orders');
+export const playersCollection = database.get<Player>('players');

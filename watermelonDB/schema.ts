@@ -21,5 +21,13 @@ export default appSchema({
                 { name: 'is_pinned', type: 'boolean' },
             ]
         }),
+        tableSchema({
+            name: 'players',
+            columns: [
+                { name: 'age', type: 'number' },
+                { name: 'player_name', type: 'string' },
+                { name: 'position', type: 'string' },
+            ]
+        }),
     ]
 })
