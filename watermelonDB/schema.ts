@@ -7,7 +7,7 @@ export default appSchema({
             name: 'orders',
             columns: [
                 { name: 'order_id', type: 'string' },
-                { name: 'created_at', type: 'string' },
+                { name: 'created_at', type: 'number' },
                 { name: 'contract_agreement_id', type: 'string', isIndexed: true },
             ]
         }),

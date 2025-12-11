@@ -23,10 +23,9 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const writeDBData = useCallback(async (): Promise<void> => {
         await database.write(async (): Promise<void> => {
             await ordersCollection.create((post: Order): void => {
-                post.title = 'Title2'
-                post.subtitle = 'Subtitle2'
-                post.body = 'Body2'
-                post.isPinned = false
+                post.orderId = 'Title2'
+                post.createdAt = 'Subtitle2'
+                post.contractAgreementId = 'Body2'
             })
         })
     }, []);
@@ -34,10 +33,9 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const updateDBData = useCallback(async (updatedPost: Order): Promise<void> => {
         await database.write(async (): Promise<void> => {
             await updatedPost.update((post: Order) => {
-                post.title = 'Title3'
-                post.subtitle = 'Subtitle3'
-                post.body = 'Body3'
-                post.isPinned = true
+                post.orderId = 'Title3'
+                post.createdAt = 'Subtitle3'
+                post.contractAgreementId = 'Body3'
             })
         });
     }, []);
