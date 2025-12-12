@@ -31,3 +31,7 @@ export const database = new Database({
 export const ordersCollection = database.get<Order>('orders');
 export const playersCollection = database.get<Player>('players');
 export const productsCollection = database.get<Product>('products');
+export const contractAgreementsCollection = database.get<ContractAgreement>('contract_agreements');
+export const contactsCollection = database.get<Contact>('contacts');
+export const orderContactsCollection = database.get<OrderContact>('order_contacts');
+export const productOrdersCollection = database.get<ProductOrder>('products_orders');

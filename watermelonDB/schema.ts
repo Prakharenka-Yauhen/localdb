@@ -37,7 +37,7 @@ export default appSchema({
             ]
         }),
         tableSchema({
-            name: 'orders_contacts',
+            name: 'order_contacts',
             columns: [
                 { name: 'order_id', type: 'string', isIndexed: true },
                 { name: 'contact_id', type: 'string', isIndexed: true },

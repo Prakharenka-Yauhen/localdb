@@ -22,8 +22,8 @@ export default function LocalDBScreen(): JSX.Element {
         <View style={styles.horizontal}>
             <Button title={'Reset DB data'} onPress={resetDBData} style={styles.deleteButton} />
         </View>
-        <PlayersList />
-        {/*<OrdersList />*/}
+        {/*<PlayersList />*/}
+        <OrdersList />
     </View>
 }
 

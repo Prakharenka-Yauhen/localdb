@@ -4,7 +4,7 @@ import { field, relation } from '@nozbe/watermelondb/decorators'
 import {Contact, Order} from "@/watermelonDB/models/index";
 
 export default class OrderContact extends Model {
-    static table = 'orders_contacts';
+    static table = 'order_contacts';
 
     static associations = {
         orders: { type: 'belongs_to', key: 'order_id' },

@@ -7,7 +7,7 @@ export default class Contact extends Model {
     static table = 'contacts';
 
     static associations = {
-        orders_contacts: { type: 'has_many', foreignKey: 'contact_id' },
+        order_contacts: { type: 'has_many', foreignKey: 'contact_id' },
     } as const
 
     @text('full_name') fullName!: string;
@@ -15,5 +15,5 @@ export default class Contact extends Model {
     @text('phone') phone!: string;
     @text('company') company!: string;
 
-    @children('orders_contacts') orderContacts!: Collection<OrderContact>;
+    @children('order_contacts') orderContacts!: Collection<OrderContact>;
 }
