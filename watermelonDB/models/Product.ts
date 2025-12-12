@@ -8,7 +8,7 @@ export default class Product extends Model {
         products_orders: { type: 'has_many', foreignKey: 'product_id' }
     } as const
 
-    @text('product_id') productId: string;
-    @text('name') name: string;
-    @field('recommend_price') recommendPrice: number;
+    @text('product_id') productId!: string;
+    @text('name') name!: string;
+    @field('recommend_price') recommendPrice!: number;
 }

@@ -1,5 +1,7 @@
-import { Model } from '@nozbe/watermelondb'
-import { field, relation } from '@nozbe/watermelondb/decorators'
+import {Collection, Model} from '@nozbe/watermelondb'
+import { text, field, relation } from '@nozbe/watermelondb/decorators'
+
+import {Order, Product} from "@/watermelonDB/models/index";
 
 export default class ProductOrder extends Model {
     static table = 'products_orders';
@@ -9,11 +11,11 @@ export default class ProductOrder extends Model {
         products: { type: 'belongs_to', key: 'product_id' },
     } as const
 
-    @field('order_id') orderId;
-    @field('product_id') productId;
-    @field('price') price;
-    @field('quantity') quantity;
+    @text('order_id') orderId!: string;
+    @text('product_id') productId!: string;
+    @text('price') price!: string;
+    @field('quantity') quantity!: number;
 
-    @relation('orders', 'order_id') order;
-    @relation('products', 'product_id') product;
+    @relation('orders', 'order_id') order!: Collection<Order>;
+    @relation('products', 'product_id') product!: Collection<Product>;
 }
