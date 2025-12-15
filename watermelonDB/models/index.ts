@@ -1,2 +1,8 @@
+export { default as Contact } from './Contact'
 export { default as Contract } from './Contract'
 export { default as Order } from './Order'
+export { default as Player } from './Player'
+export { default as Product } from './Product'
+export { default as OrderContact } from './OrderContact'
+export { default as ContractAgreement } from './ContractAgreement'
+export { default as ProductOrder } from './ProductOrder'
