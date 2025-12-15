@@ -1,4 +1,4 @@
-import {StyleSheet, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import {JSX} from "react";
 
 import {Button} from "@/components/Button";
@@ -8,7 +8,7 @@ import PlayersList from "@/app/components/PlayersList";
 
 export default function LocalDBScreen(): JSX.Element {
     const {getPlayers, writePlayers} = useGetPlayers();
-    const {getDBData, writeDBData, resetDBData} = useLocalDBScreen();
+    const {saveTime, getTime, getDBData, writeDBData, resetDBData} = useLocalDBScreen();
 
     return <View style={styles.container}>
         <View style={styles.horizontal}>
@@ -22,6 +22,8 @@ export default function LocalDBScreen(): JSX.Element {
         <View style={styles.horizontal}>
             <Button title={'Reset DB data'} onPress={resetDBData} style={styles.deleteButton} />
         </View>
+        <Text>{`Save time: ${saveTime}`}</Text>
+        <Text>{`Get time: ${getTime}`}</Text>
         {/*<PlayersList />*/}
         <OrdersList />
     </View>
