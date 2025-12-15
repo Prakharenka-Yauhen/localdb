@@ -47,39 +47,13 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         const start: number = Date.now();
 
         const products = preview.products;
-        const existingProducts: Product[] = await productsCollection.query().fetch();
-        const existingProductsIds = new Set(existingProducts.map((product: Product): string => product.productId));
-        const newProducts: any[] = products.filter((product: any): boolean => !existingProductsIds.has(product.productId));
-
         const orders = preview.orders;
+
+        const existingProducts: Product[] = await productsCollection.query().fetch();
         const existingOrders: Order[] = await ordersCollection.query().fetch();
-        const existingOrdersIds = new Set(existingOrders.map((order: Order): string => order.orderId));
-        const newOrders: any[] = orders.filter((order: any): boolean => !existingOrdersIds.has(order.orderId));
-
-        const allContacts: any[] = preview.orders.flatMap((order: any): any => order.contacts);
-        const contacts: any[] = Array.from(
-            new Map(allContacts.map((contact: any) => [contact.email.toLowerCase(), contact])).values()
-        );
         const existingContacts: Contact[] = await contactsCollection.query().fetch();
-        const existingContactsIds = new Set(existingContacts.map((contact: Contact): string => contact.email.toLowerCase()));
-        const newContacts: any[] = contacts.filter((contact: any): boolean => !existingContactsIds.has(contact.email.toLowerCase()));
-
-        const allProductOrders: any[] = preview.orders.flatMap((order: any): any => order.products_orders);
-        const productOrders: any[] = Array.from(
-            new Map(allProductOrders.map((productOrder: any) => [productOrder.productId, productOrder])).values()
-        );
         const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
-        const existingProductOrdersIds = new Set(existingProductOrders.map((productOrder: ProductOrder): string => productOrder.productId));
-        const newProductOrders: any[] = productOrders.filter((productOrder: any): boolean => !existingProductOrdersIds.has(productOrder.productId));
-
-        const allContractAgreements: any[] = preview.orders.map((order: any):any => order.contract_agreement);
-        const contractAgreements: any[] = Array.from(
-            new Map(allContractAgreements.map((contractAgreement: any) => [contractAgreement.contractAgreementId, contractAgreement])).values()
-        );
         const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
-        const existingContractAgreementsIds = new Set(existingContractAgreements.map((contractAgreement: ContractAgreement): string => contractAgreement.contractId));
-        const newContractAgreements: any[] = contractAgreements.filter((contractAgreement: any): boolean => !existingContractAgreementsIds.has(contractAgreement.contractAgreementId));
-
         const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
 
         const batch: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
