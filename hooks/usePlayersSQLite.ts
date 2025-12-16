@@ -56,8 +56,7 @@ export const usePlayersSQLite = (): UsePlayersSQLiteProps => {
                     console.log(111)
                     try {
                         db.runAsync(
-                            `INSERT
-                            OR REPLACE INTO PLAYERS (id, age, player_name, player_position) VALUES (?, ?, ?, ?)`,
+                            `INSERT OR REPLACE INTO PLAYERS (id, age, player_name, player_position) VALUES (?, ?, ?, ?)`,
                             [player.playerId, player.age, player.playerName, player.position]
                         )
                     } catch (error) {
