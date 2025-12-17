@@ -6,6 +6,8 @@ import preview from "@/watermelonDB/exampleFiles/preview.json";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
+    saveSQLiteDBTime: number;
+    getSQLiteDBTime: number;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
@@ -13,6 +15,8 @@ type UseOrdersSQLiteProps= {
 
 export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [orders, setOrders] = useState<any[]>([]);
+    const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
+    const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
@@ -84,65 +88,69 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     }, []);
 
     const getOrders = useCallback(async (): Promise<void> => {
+        const start: number = Date.now();
         const db: SQLiteDatabase = await getDB();
         const ordersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDERS`
         );
         setOrders(ordersDB);
+        const end: number = Date.now();
+        setGetSQLiteDBTime(end - start);
     }, []);
 
     const writeOrders = useCallback(async (): Promise<void> => {
+        const start: number = Date.now();
         const orders = preview.orders;
         const products = preview.products;
         const db: SQLiteDatabase = await getDB();
 
         orders.forEach((order: any): void => {
-            console.log(111)
-            try {
                 db.runAsync(
-                    `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`,
-                    [order.order_id, order.created_at, order.contact_id, order.contract_id]
-                )
+                `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`,
+                [order.order_id, order.created_at, order.contact_id, order.contract_id]
+            )
 
+            db.runAsync(
+                `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`,
+                [
+                    order.contract_agreement.contract_id,
+                    order.contract_agreement.title,
+                    order.contract_agreement.signed_date,
+                ]
+            );
+
+            order.contacts.forEach((contact: any): void => {
+                const contactId = contact.full_name.replace(/\s+/g, '_');
                 db.runAsync(
-                    `INSERT OR IGNORE INTO contracts (contract_id, title, signed_date) VALUES (?, ?, ?)`,
-                    [
-                        order.contract_agreement.contract_id,
-                        order.contract_agreement.title,
-                        order.contract_agreement.signed_date,
-                    ]
+                    `INSERT OR REPLACE INTO CONTACTS (full_name, email, phone, company) VALUES (?, ?, ?, ?)`,
+                    [contactId, contact.full_name, contact.email, contact.phone, contact.company]
                 );
 
-                order.contacts.forEach((contact: any): void => {
-                    const contactId = contact.full_name.replace(/\s+/g, '_');
-                    db.runAsync(
-                        `INSERT INTO contacts (full_name, email, phone, company) VALUES (?, ?, ?, ?)`,
-                        [contactId, contact.full_name, contact.email, contact.phone, contact.company]
-                    );
+                db.runAsync(
+                    `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`,
+                    [order.order_id, contactId]
+                );
+            })
 
-                    db.runAsync(
-                        `INSERT INTO order_contacts (order_id, contact_id) VALUES (?, ?)`,
-                        [order.order_id, contactId]
-                    );
+            order.products_orders.forEach((productsOrder: any): void => {
+                db.runAsync(
+                    "INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)",
+                    [order.order_id, productsOrder.product_id, productsOrder.price, productsOrder.quantity]
+                ).finally(() => {
+                    const end: number = Date.now();
+                    setSaveSQLiteDBTime(end - start);
                 })
-
-                order.products_orders.forEach((productsOrder: any): void => {
-                    db.runAsync(
-                        "INSERT INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)",
-                        [order.order_id, productsOrder.product_id, productsOrder.price, productsOrder.quantity]
-                    );
-                })
-            } catch (error) {
-                console.log(444)
-                console.log(error)
-            }
+            })
         })
 
         products.forEach((product: any): void => {
             db.runAsync(
                 `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`,
                 [product.product_id, product.name, product.recommend_price]
-            )
+            ).then(() => {
+                const end: number = Date.now();
+                setSaveSQLiteDBTime(end - start);
+            });
         })
     }, []);
 
@@ -159,5 +167,5 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         createOrdersDB().catch((e: Error): void => console.log(e));
     }, []);
 
-    return {orders, getOrders, writeOrders, deleteOrdersDB}
+    return {orders, saveSQLiteDBTime, getSQLiteDBTime, getOrders, writeOrders, deleteOrdersDB}
 }

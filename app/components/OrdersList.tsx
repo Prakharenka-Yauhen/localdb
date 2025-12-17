@@ -15,7 +15,7 @@ const OrdersList = ({orders}: OrdersListProps): JSX.Element => {
         return <OrderListItem order={item} />
     }, [])
 
-    return <FlatList data={orders} renderItem={renderItem} />
+    return <FlatList data={orders} renderItem={renderItem} style={{flex: 1}} />
 }
 
 const enhance = withObservables([], () => ({

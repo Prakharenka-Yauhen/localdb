@@ -38,9 +38,9 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const getDBData = useCallback(async (): Promise<void> => {
         const start: number = Date.now();
         const orders: Order[] = await ordersCollection.query().fetch();
+        setOrdersList(orders);
         const end: number = Date.now();
         setGetTime(end - start);
-        setOrdersList(orders);
     }, []);
 
     const writeDBData = useCallback(async (): Promise<void> => {
