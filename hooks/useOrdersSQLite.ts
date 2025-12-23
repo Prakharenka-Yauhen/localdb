@@ -5,23 +5,27 @@ import RNFS from 'react-native-fs';
 import {getDB} from "@/sqlite";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
 import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
-import axios from "axios";
+import {hashValues} from "@/utils";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
     downloadSQLiteBETime: number;
     saveSQLiteDBTime: number;
     getSQLiteDBTime: number;
+    hashSQLiteTime: number;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
+    hashAllSQLiteValues: () => void;
 }
 
 export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [orders, setOrders] = useState<any[]>([]);
+    const [BEData, setBEData] = useState<object | null>(null);
     const [downloadSQLiteBETime, setDownloadSQLiteBETime] = useState<number>(0);
     const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
     const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
+    const [hashSQLiteTime, setHashSQLiteTime] = useState<number>(0);
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
@@ -148,13 +152,13 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             return JSON.parse(jsonString);
         };
 
-        let jsonData = await getJsonData();
-
+        let objectData = await getJsonData();
+        setBEData(objectData);
         setDownloadSQLiteBETime(Date.now() - start);
         const startDB = Date.now();
 
-        const orders = jsonData.orders;
-        const products = jsonData.products;
+        const orders = objectData.orders;
+        const products = objectData.products;
 
         await db.runAsync("BEGIN TRANSACTION");
 
@@ -390,12 +394,20 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
           DROP TABLE IF EXISTS ORDER_CONTACTS;
         `);
         await createOrdersDB();
-        setDownloadBETime(0);
+        setDownloadSQLiteBETime(0);
         setSaveSQLiteDBTime(0);
         setGetSQLiteDBTime(0);
+        setHashSQLiteTime(0);
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
     }, []);
+
+    const hashAllSQLiteValues = (): void => {
+        setHashSQLiteTime(0);
+        const start: number = Date.now();
+        hashValues(BEData);
+        setHashSQLiteTime(Date.now() - start);
+    };
 
     useEffect(() => {
         createOrdersDB().catch((e: Error): void => console.log(e));
@@ -406,8 +418,10 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         downloadSQLiteBETime,
         saveSQLiteDBTime,
         getSQLiteDBTime,
+        hashSQLiteTime,
         getOrders,
         writeOrders,
-        deleteOrdersDB
+        deleteOrdersDB,
+        hashAllSQLiteValues
     }
 }

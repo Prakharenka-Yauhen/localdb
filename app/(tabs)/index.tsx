@@ -8,8 +8,26 @@ import PlayersList from "@/app/components/PlayersList";
 
 export default function LocalDBScreen(): JSX.Element {
     const {getPlayers, writePlayers} = useGetPlayers();
-    const {downloadTime, saveTime, getTime, getDBData, writeDBData, resetDBData} = useLocalDBScreen();
-    const {downloadSQLiteBETime, saveSQLiteDBTime, getSQLiteDBTime, getOrders, writeOrders, deleteOrdersDB} = useOrdersSQLite();
+    const {
+        downloadTime,
+        saveTime,
+        getTime,
+        hashTime,
+        getDBData,
+        writeDBData,
+        resetDBData,
+        hashAllValues
+    } = useLocalDBScreen();
+    const {
+        downloadSQLiteBETime,
+        saveSQLiteDBTime,
+        getSQLiteDBTime,
+        hashSQLiteTime,
+        getOrders,
+        writeOrders,
+        deleteOrdersDB,
+        hashAllSQLiteValues
+    } = useOrdersSQLite();
 
     return <View style={styles.container}>
         {/*<View style={styles.horizontal}>*/}
@@ -24,6 +42,9 @@ export default function LocalDBScreen(): JSX.Element {
             <Button title={'Write WaterDB data'} onPress={() => {
                 writeDBData();
             }} style={styles.writeButton} />
+            <Button title={'Hash WaterDB data'} onPress={() => {
+                hashAllValues();
+            }} style={styles.writeButton} />
         </View>
         <View style={styles.horizontal}>
             <Button title={'Get SQliteDB data'} onPress={() => {
@@ -31,6 +52,9 @@ export default function LocalDBScreen(): JSX.Element {
             }} style={styles.getButton} />
             <Button title={'Write SQliteDB data'} onPress={() => {
                 writeOrders();
+            }} style={styles.writeButton} />
+            <Button title={'Hash SQliteDB data'} onPress={() => {
+                hashAllSQLiteValues();
             }} style={styles.writeButton} />
         </View>
         <View style={styles.horizontal}>
@@ -42,10 +66,12 @@ export default function LocalDBScreen(): JSX.Element {
         <Text style={styles.text}>{`Download time to Watermelon: ${downloadTime}`}</Text>
         <Text style={styles.text}>{`Save time to Watermelon: ${saveTime}`}</Text>
         <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
+        <Text style={styles.text}>{`Hash Watermelon Time: ${hashTime}`}</Text>
         <Text></Text>
         <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
         <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
         <Text style={styles.text}>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
+        <Text style={styles.text}>{`Hash SQLite Time: ${hashSQLiteTime}`}</Text>
         {/*<OrdersList />*/}
     </View>
 }

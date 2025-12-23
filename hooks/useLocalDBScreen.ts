@@ -20,24 +20,29 @@ import {
 // import preview from '../watermelonDB/exampleFiles/preview.json';
 // import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
 import RNFS from "react-native-fs";
+import {hashValues} from "@/utils";
 
 type UseLocalDBScreenProps = {
     ordersList: Order[];
     downloadTime: number;
     saveTime: number;
     getTime: number;
+    hashTime: number;
     getDBData: () => void;
     writeDBData: () => void;
     updateDBData: (post: Order) => void;
     deleteDBData: (post: Order) => void;
     resetDBData: () => void;
+    hashAllValues: () => void;
 }
 
 export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const [ordersList, setOrdersList] = useState<Order[]>([]);
+    const [BEData, setBEData] = useState<object | null>(null);
     const [downloadTime, setDownloadTime] = useState<number>(0);
     const [saveTime, setSaveTime] = useState<number>(0);
     const [getTime, setGetTime] = useState<number>(0);
+    const [hashTime, setHashTime] = useState<number>(0);
 
     const getDBData = useCallback(async (): Promise<void> => {
         setGetTime(0);
@@ -60,8 +65,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             console.log(e)
         }
         // setOrdersList(existingOrders);
-        const end: number = Date.now();
-        setGetTime(end - start);
+        setGetTime(Date.now() - start);
     }, []);
 
     const writeDBData = useCallback(async (): Promise<void> => {
@@ -84,13 +88,13 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
                 return JSON.parse(jsonString);
             };
 
-            let jsonData = await getJsonData();
-
+            let objectData = await getJsonData();
+            setBEData(objectData);
             setDownloadTime(Date.now() - start);
             const startDB = Date.now();
 
-            const products = jsonData.products;
-            const orders = jsonData.orders;
+            const orders = objectData.orders;
+            const products = objectData.products;
 
             const existingProducts: Product[] = await productsCollection.query().fetch();
             const existingOrders: Order[] = await ordersCollection.query().fetch();
@@ -286,15 +290,24 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         setGetTime(0);
     }, []);
 
+    const hashAllValues = (): void => {
+        setHashTime(0);
+        const start: number = Date.now();
+        hashValues(BEData);
+        setHashTime(Date.now() - start);
+    };
+
     return {
         ordersList,
         downloadTime,
         saveTime,
         getTime,
+        hashTime,
         getDBData,
         writeDBData,
         updateDBData,
         deleteDBData,
-        resetDBData
+        resetDBData,
+        hashAllValues
     }
 }
