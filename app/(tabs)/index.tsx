@@ -18,12 +18,18 @@ export default function LocalDBScreen(): JSX.Element {
         {/*</View>*/}
         {/*<PlayersList />*/}
         <View style={styles.horizontal}>
-            <Button title={'Get DB data'} onPress={() => {
+            <Button title={'Get WaterDB data'} onPress={() => {
                 getDBData();
+            }} style={styles.getButton} />
+            <Button title={'Write WaterDB data'} onPress={() => {
+                writeDBData();
+            }} style={styles.writeButton} />
+        </View>
+        <View style={styles.horizontal}>
+            <Button title={'Get SQliteDB data'} onPress={() => {
                 getOrders();
             }} style={styles.getButton} />
-            <Button title={'Write DB data'} onPress={() => {
-                writeDBData();
+            <Button title={'Write SQliteDB data'} onPress={() => {
                 writeOrders();
             }} style={styles.writeButton} />
         </View>
@@ -37,7 +43,7 @@ export default function LocalDBScreen(): JSX.Element {
         <Text>{`Get time from Watermelon: ${getTime}`}</Text>
         <Text>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
         <Text>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
-        <OrdersList />
+        {/*<OrdersList />*/}
     </View>
 }
 

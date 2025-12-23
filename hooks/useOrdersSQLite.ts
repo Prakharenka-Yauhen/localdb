@@ -1,8 +1,11 @@
 import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
+import RNFS from 'react-native-fs';
 
 import {getDB} from "@/sqlite";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
+import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
+import axios from "axios";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
@@ -88,77 +91,282 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     }, []);
 
     const getOrders = useCallback(async (): Promise<void> => {
+        setGetSQLiteDBTime(0);
         const start: number = Date.now();
         const db: SQLiteDatabase = await getDB();
+        const productsDB: any[] = await db.getAllAsync(
+            `SELECT * FROM PRODUCTS`
+        );
         const ordersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDERS`
         );
-        setOrders(ordersDB);
+        const contactsDB: any[] = await db.getAllAsync(
+            `SELECT * FROM CONTACTS`
+        );
+        const productOrdersDB: any[] = await db.getAllAsync(
+            `SELECT * FROM ORDER_PRODUCTS`
+        );
+        const contractAgreementsDB: any[] = await db.getAllAsync(
+            `SELECT * FROM CONTRACTS`
+        );
+        const orderContactsDB: any[] = await db.getAllAsync(
+            `SELECT * FROM ORDER_CONTACTS`
+        );
+        console.log('getOrders')
+        console.log(productsDB.length)
+        console.log(ordersDB.length)
+        console.log(contactsDB.length)
+        console.log(productOrdersDB.length)
+        console.log(contractAgreementsDB.length)
+        console.log(orderContactsDB.length)
+        // setOrders(ordersDB);
         const end: number = Date.now();
         setGetSQLiteDBTime(end - start);
     }, []);
 
     const writeOrders = useCallback(async (): Promise<void> => {
-        const start: number = Date.now();
-        const orders = preview.orders;
-        const products = preview.products;
+        setSaveSQLiteDBTime(0);
+        const start = Date.now();
+        const orders = mock_data_29_4.orders;
+        const products = mock_data_29_4.products;
         const db: SQLiteDatabase = await getDB();
 
-        orders.forEach((order: any): void => {
-                db.runAsync(
-                `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`,
-                [order.order_id, order.created_at, order.contact_id, order.contract_id]
-            )
+        // await db.runAsync("BEGIN TRANSACTION");
 
-            db.runAsync(
-                `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`,
-                [
+        const insertOrderStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO ORDERS
+     (order_id, created_at, contact_id, contract_id)
+     VALUES (?, ?, ?, ?)`
+        );
+
+        const insertContractStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO CONTRACTS
+     (contract_id, title, signed_date)
+     VALUES (?, ?, ?)`
+        );
+
+        const insertContactStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO CONTACTS
+     (contact_id, full_name, email, phone, company)
+     VALUES (?, ?, ?, ?, ?)`
+        );
+
+        const insertOrderContactStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO ORDER_CONTACTS
+     (order_id, contact_id)
+     VALUES (?, ?)`
+        );
+
+        const insertOrderProductStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO ORDER_PRODUCTS
+     (order_id, product_id, price, quantity)
+     VALUES (?, ?, ?, ?)`
+        );
+
+        const insertProductStmt = await db.prepareAsync(
+            `INSERT OR REPLACE INTO PRODUCTS
+     (product_id, name, recommend_price)
+     VALUES (?, ?, ?)`
+        );
+
+        try {
+            // Orders
+            for (const order of orders) {
+                await insertOrderStmt.executeAsync([
+                    order.order_id,
+                    order.created_at,
+                    order.contact_id,
+                    order.contract_agreement.contract_id,
+                ]);
+
+                await insertContractStmt.executeAsync([
                     order.contract_agreement.contract_id,
                     order.contract_agreement.title,
                     order.contract_agreement.signed_date,
-                ]
-            );
+                ]);
 
-            order.contacts.forEach((contact: any): void => {
-                const contactId = contact.full_name.replace(/\s+/g, '_');
-                db.runAsync(
-                    `INSERT OR REPLACE INTO CONTACTS (full_name, email, phone, company) VALUES (?, ?, ?, ?)`,
-                    [contactId, contact.full_name, contact.email, contact.phone, contact.company]
-                );
+                // Contacts
+                for (const contact of order.contacts) {
+                    const contactId = contact.full_name.replace(/\s+/g, "_");
 
-                db.runAsync(
-                    `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`,
-                    [order.order_id, contactId]
-                );
-            })
+                    await insertContactStmt.executeAsync([
+                        contactId,
+                        contact.full_name,
+                        contact.email,
+                        contact.phone,
+                        contact.company,
+                    ]);
 
-            order.products_orders.forEach((productsOrder: any): void => {
-                db.runAsync(
-                    "INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)",
-                    [order.order_id, productsOrder.product_id, productsOrder.price, productsOrder.quantity]
-                ).finally(() => {
-                    const end: number = Date.now();
-                    setSaveSQLiteDBTime(end - start);
-                })
-            })
-        })
+                    await insertOrderContactStmt.executeAsync([
+                        order.order_id,
+                        contactId,
+                    ]);
+                }
 
-        products.forEach((product: any): void => {
-            db.runAsync(
-                `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`,
-                [product.product_id, product.name, product.recommend_price]
-            ).then(() => {
-                const end: number = Date.now();
-                setSaveSQLiteDBTime(end - start);
-            });
-        })
+                // Order products
+                for (const productOrder of order.products_orders) {
+                    await insertOrderProductStmt.executeAsync([
+                        order.order_id,
+                        productOrder.product_id,
+                        productOrder.price,
+                        productOrder.quantity,
+                    ]);
+                }
+            }
+
+            // Products
+            for (const product of products) {
+                await insertProductStmt.executeAsync([
+                    product.product_id,
+                    product.name,
+                    product.recommend_price,
+                ]);
+            }
+
+            await db.runAsync("COMMIT");
+        } catch (e) {
+            await db.runAsync("ROLLBACK");
+            throw e;
+        } finally {
+            await insertOrderStmt.finalizeAsync();
+            await insertContractStmt.finalizeAsync();
+            await insertContactStmt.finalizeAsync();
+            await insertOrderContactStmt.finalizeAsync();
+            await insertOrderProductStmt.finalizeAsync();
+            await insertProductStmt.finalizeAsync();
+
+            setSaveSQLiteDBTime(Date.now() - start);
+        }
     }, []);
+
+    // const writeOrders = useCallback(async (): Promise<void> => {
+    //     const start: number = Date.now();
+    //     const orders = mock_data_29_4.orders;
+    //     const products = mock_data_29_4.products;
+    //     const db: SQLiteDatabase = await getDB();
+    //
+    //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
+    //     // const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+    //     //
+    //     //
+    //     // const download = await RNFS.downloadFile({
+    //     //     fromUrl: api,
+    //     //     toFile: path,
+    //     //     // progressDivider: 5,
+    //     //     // progress: (res) => {
+    //     //     //     if (res.contentLength > 0) {
+    //     //     //         const progress = (
+    //     //     //             res.bytesWritten / res.contentLength
+    //     //     //         ).toFixed(2);
+    //     //     //         console.log('Progress:', progress);
+    //     //     //     }
+    //     //     // },
+    //     // }).promise;
+    //     //
+    //     // const getJsonData = async () => {
+    //     //     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+    //     //
+    //     //     // 1️⃣ Read file as string
+    //     //     const jsonString = await RNFS.readFile(path, 'utf8');
+    //     //
+    //     //     // 2️⃣ Parse JSON
+    //     //     const data = JSON.parse(jsonString);
+    //     //
+    //     //     return data;
+    //     // };
+    //
+    //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
+    //     // try {
+    //     //     const response = await axios.get(api);
+    //     // } catch (error) {
+    //     //     console.log(error)
+    //     // }
+    //
+    //     orders.forEach((order: any): void => {
+    //         db.runAsync(
+    //             `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`,
+    //             [order.order_id, order.created_at, order.contact_id, order.contract_id]
+    //         ).catch((err: Error) => {
+    //             console.log(7774);
+    //         })
+    //
+    //         db.runAsync(
+    //             `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`,
+    //             [
+    //                 order.contract_agreement.contract_id,
+    //                 order.contract_agreement.title,
+    //                 order.contract_agreement.signed_date,
+    //             ]
+    //         ).catch((err: Error) => {
+    //             console.log(7774);
+    //         });
+    //
+    //         order.contacts.forEach((contact: any): void => {
+    //             const contactId = contact.full_name.replace(/\s+/g, '_');
+    //             db.runAsync(
+    //                 `INSERT OR REPLACE INTO CONTACTS (full_name, email, phone, company) VALUES (?, ?, ?, ?)`,
+    //                 [contactId, contact.full_name, contact.email, contact.phone, contact.company]
+    //             ).catch((err: Error) => {
+    //                 console.log(7774);
+    //             });
+    //
+    //             db.runAsync(
+    //                 `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`,
+    //                 [order.order_id, contactId]
+    //             ).catch((err: Error) => {
+    //                 console.log(7774);
+    //             });
+    //         })
+    //
+    //         order.products_orders.forEach((productsOrder: any): void => {
+    //             db.runAsync(
+    //                 "INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)",
+    //                 [order.order_id, productsOrder.product_id, productsOrder.price, productsOrder.quantity]
+    //             ).catch((err: Error) => {
+    //                 console.log(7774);
+    //             }).finally(() => {
+    //                 const end: number = Date.now();
+    //                 setSaveSQLiteDBTime(end - start);
+    //             })
+    //         })
+    //     })
+    //
+    //     products.forEach((product: any): void => {
+    //         db.runAsync(
+    //             `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`,
+    //             [product.product_id, product.name, product.recommend_price]
+    //         ).then(() => {
+    //             const end: number = Date.now();
+    //             setSaveSQLiteDBTime(end - start);
+    //         }).catch((err: Error) => {
+    //             console.log(7774);
+    //         });
+    //     })
+    // }, []);
 
     const deleteOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
         await db.execAsync(`
+          DROP TABLE IF EXISTS PRODUCTS;
+        `);
+        await db.execAsync(`
           DROP TABLE IF EXISTS ORDERS;
         `);
+        await db.execAsync(`
+          DROP TABLE IF EXISTS CONTACTS;
+        `);
+        await db.execAsync(`
+          DROP TABLE IF EXISTS ORDER_PRODUCTS;
+        `);
+        await db.execAsync(`
+          DROP TABLE IF EXISTS CONTRACTS;
+        `);
+        await db.execAsync(`
+          DROP TABLE IF EXISTS ORDER_CONTACTS;
+        `);
+        await createOrdersDB();
+        setSaveSQLiteDBTime(0);
+        setGetSQLiteDBTime(0);
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
     }, []);

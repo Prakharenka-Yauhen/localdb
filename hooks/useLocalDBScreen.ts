@@ -18,6 +18,7 @@ import {
     ContractAgreement
 } from "@/watermelonDB/models";
 import preview from '../watermelonDB/exampleFiles/preview.json';
+import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
 
 type UseLocalDBScreenProps = {
     ordersList: Order[];
@@ -36,18 +37,37 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const [getTime, setGetTime] = useState<number>(0);
 
     const getDBData = useCallback(async (): Promise<void> => {
+        setGetTime(0);
         const start: number = Date.now();
-        const orders: Order[] = await ordersCollection.query().fetch();
-        setOrdersList(orders);
+        try {
+            const existingProducts: Product[] = await productsCollection.query().fetch();
+            const existingOrders: Order[] = await ordersCollection.query().fetch();
+            const existingContacts: Contact[] = await contactsCollection.query().fetch();
+            const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
+            const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
+            const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
+            console.log('getDBData')
+            console.log(existingProducts.length)
+            console.log(existingOrders.length)
+            console.log(existingContacts.length)
+            console.log(existingProductOrders.length)
+            console.log(existingContractAgreements.length)
+            console.log(existingOrderContacts.length)
+        } catch (e) {
+            console.log(e)
+        }
+        // setOrdersList(existingOrders);
         const end: number = Date.now();
         setGetTime(end - start);
     }, []);
 
     const writeDBData = useCallback(async (): Promise<void> => {
+        try {
+        setSaveTime(0);
         const start: number = Date.now();
 
-        const products = preview.products;
-        const orders = preview.orders;
+        const products = mock_data_29_4.products;
+        const orders = mock_data_29_4.orders;
 
         const existingProducts: Product[] = await productsCollection.query().fetch();
         const existingOrders: Order[] = await ordersCollection.query().fetch();
@@ -56,7 +76,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
         const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
 
-        const batch: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
+        const batchProducts: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
 
         products.forEach((productData: any): void => {
             const existingProduct: Product | undefined = existingProducts.find((product: Product): any | undefined => product.productId === productData.product_id);
@@ -69,7 +89,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
                     product.recommendPrice = productData['recommend_price'];
                 });
 
-                batch.push(batchUpdateProducts);
+                batchProducts.push(batchUpdateProducts);
             } else {
                 const batchNewProducts: Product = productsCollection.prepareCreate((product: Product): void => {
                     product._raw.id = productData['product_id'];
@@ -78,9 +98,16 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
                     product.recommendPrice = productData['recommend_price'];
                 });
 
-                batch.push(batchNewProducts);
+                batchProducts.push(batchNewProducts);
             }
         });
+
+        await database.write(async (): Promise<void> => {
+            await database.batch(...batchProducts)
+        });
+
+        const batch: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
+        const batch2: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
 
         orders.forEach((orderData: any): void => {
             const existingOrder: Order | undefined = existingOrders.find((order: Order): any | undefined => order.orderId === orderData.order_id);
@@ -130,31 +157,31 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             const contracts: any[] = orderData.contacts;
 
             contracts.forEach((contractData: any): void => {
-                const existingContact: Contact | undefined = existingContacts.find((contact: Contact): any | undefined => contact._raw.id === contractData["full_name"].replace(/\s+/g, '_'));
+                const existingContact: Contact | undefined = existingContacts.find((contact: Contact): any | undefined => contact._raw.id === contractData.phone);
 
                 if (existingContact) {
                     const batchUpdateContract: Contact = existingContact.prepareUpdate((contact: Contact): void => {
-                        contact._raw.id = `${contractData["full_name"].replace(/\s+/g, '_')}`;
+                        contact._raw.id = contractData.phone;
                         contact.fullName = contractData["full_name"];
                         contact.email = contractData.email;
                         contact.phone = contractData.phone;
                         contact.company = contractData.company;
                     });
 
-                    batch.push(batchUpdateContract);
+                    batch2.push(batchUpdateContract);
                 } else {
                     const batchNewContract: Contact = contactsCollection.prepareCreate((contact: Contact): void => {
-                        contact._raw.id = `${contractData["full_name"].replace(/\s+/g, '_')}`;
+                        contact._raw.id = contractData.phone;
                         contact.fullName = contractData["full_name"];
                         contact.email = contractData.email;
                         contact.phone = contractData.phone;
                         contact.company = contractData.company;
                     });
 
-                    batch.push(batchNewContract);
+                    batch2.push(batchNewContract);
                 }
 
-                const existingOrderContact: OrderContact | undefined = existingOrderContacts.find((orderContact: OrderContact): any | undefined => orderContact._raw.id === contractData["full_name"].replace(/\s+/g, '_'));
+                const existingOrderContact: OrderContact | undefined = existingOrderContacts.find((orderContact: OrderContact): any | undefined => orderContact._raw.id === contractData.phone);
 
                 if (existingOrderContact) {
                     const batchUpdateOrderContacts: OrderContact = existingOrderContact.prepareUpdate((orderContact: OrderContact): void => {
@@ -162,14 +189,14 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
                         orderContact.contactId = orderData["contact_id"];
                     });
 
-                    batch.push(batchUpdateOrderContacts);
+                    batch2.push(batchUpdateOrderContacts);
                 } else {
                     const batchNewOrderContacts: OrderContact = orderContactsCollection.prepareCreate((orderContact: OrderContact): void => {
                         orderContact.orderId = orderData["order_id"];
                         orderContact.contactId = orderData["contact_id"];
                     });
 
-                    batch.push(batchNewOrderContacts);
+                    batch2.push(batchNewOrderContacts);
                 }
             })
 
@@ -203,8 +230,14 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         await database.write(async (): Promise<void> => {
             await database.batch(...batch)
         });
+        await database.write(async (): Promise<void> => {
+            await database.batch(...batch2)
+        });
         const end: number = Date.now();
         setSaveTime(end - start);
+        } catch (e) {
+            console.log(e)
+        }
     }, []);
 
     const updateDBData = useCallback(async (updatedPost: Order): Promise<void> => {
@@ -227,6 +260,8 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         await database.write(async (): Promise<void> => {
             await database.unsafeResetDatabase();
         });
+        setSaveTime(0);
+        setGetTime(0);
     }, []);
 
     return {
