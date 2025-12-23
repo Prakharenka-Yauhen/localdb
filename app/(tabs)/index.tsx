@@ -8,8 +8,8 @@ import PlayersList from "@/app/components/PlayersList";
 
 export default function LocalDBScreen(): JSX.Element {
     const {getPlayers, writePlayers} = useGetPlayers();
-    const {saveTime, getTime, getDBData, writeDBData, resetDBData} = useLocalDBScreen();
-    const {saveSQLiteDBTime, getSQLiteDBTime, getOrders, writeOrders, deleteOrdersDB} = useOrdersSQLite();
+    const {downloadTime, saveTime, getTime, getDBData, writeDBData, resetDBData} = useLocalDBScreen();
+    const {downloadSQLiteBETime, saveSQLiteDBTime, getSQLiteDBTime, getOrders, writeOrders, deleteOrdersDB} = useOrdersSQLite();
 
     return <View style={styles.container}>
         {/*<View style={styles.horizontal}>*/}
@@ -39,10 +39,13 @@ export default function LocalDBScreen(): JSX.Element {
                 deleteOrdersDB();
             }} style={styles.deleteButton} />
         </View>
-        <Text>{`Save time to Watermelon: ${saveTime}`}</Text>
-        <Text>{`Get time from Watermelon: ${getTime}`}</Text>
-        <Text>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
-        <Text>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
+        <Text style={styles.text}>{`Download time to Watermelon: ${downloadTime}`}</Text>
+        <Text style={styles.text}>{`Save time to Watermelon: ${saveTime}`}</Text>
+        <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
+        <Text></Text>
+        <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
+        <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
+        <Text style={styles.text}>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
         {/*<OrdersList />*/}
     </View>
 }
@@ -67,4 +70,9 @@ const styles = StyleSheet.create({
     deleteButton: {
         backgroundColor: 'red'
     },
+    text: {
+        fontSize: 18,
+        lineHeight: 26,
+        marginTop: 10,
+    }
 });

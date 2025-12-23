@@ -9,6 +9,7 @@ import axios from "axios";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
+    downloadSQLiteBETime: number;
     saveSQLiteDBTime: number;
     getSQLiteDBTime: number;
     getOrders: () => Promise<void>;
@@ -18,6 +19,7 @@ type UseOrdersSQLiteProps= {
 
 export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [orders, setOrders] = useState<any[]>([]);
+    const [downloadSQLiteBETime, setDownloadSQLiteBETime] = useState<number>(0);
     const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
     const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
 
@@ -125,13 +127,36 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     }, []);
 
     const writeOrders = useCallback(async (): Promise<void> => {
+        setDownloadSQLiteBETime(0);
         setSaveSQLiteDBTime(0);
         const start = Date.now();
-        const orders = mock_data_29_4.orders;
-        const products = mock_data_29_4.products;
+        // const orders = mock_data_29_4.orders;
+        // const products = mock_data_29_4.products;
         const db: SQLiteDatabase = await getDB();
 
-        // await db.runAsync("BEGIN TRANSACTION");
+        const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/sync-lite";
+        const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+
+        const download = await RNFS.downloadFile({
+            fromUrl: api,
+            toFile: path,
+        }).promise;
+
+        const getJsonData = async () => {
+            const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+            const jsonString = await RNFS.readFile(path, 'utf8');
+            return JSON.parse(jsonString);
+        };
+
+        let jsonData = await getJsonData();
+
+        setDownloadSQLiteBETime(Date.now() - start);
+        const startDB = Date.now();
+
+        const orders = jsonData.orders;
+        const products = jsonData.products;
+
+        await db.runAsync("BEGIN TRANSACTION");
 
         const insertOrderStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO ORDERS
@@ -235,7 +260,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             await insertOrderProductStmt.finalizeAsync();
             await insertProductStmt.finalizeAsync();
 
-            setSaveSQLiteDBTime(Date.now() - start);
+            setSaveSQLiteDBTime(Date.now() - startDB);
         }
     }, []);
 
@@ -245,35 +270,35 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     //     const products = mock_data_29_4.products;
     //     const db: SQLiteDatabase = await getDB();
     //
-    //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
-    //     // const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-    //     //
-    //     //
-    //     // const download = await RNFS.downloadFile({
-    //     //     fromUrl: api,
-    //     //     toFile: path,
-    //     //     // progressDivider: 5,
-    //     //     // progress: (res) => {
-    //     //     //     if (res.contentLength > 0) {
-    //     //     //         const progress = (
-    //     //     //             res.bytesWritten / res.contentLength
-    //     //     //         ).toFixed(2);
-    //     //     //         console.log('Progress:', progress);
-    //     //     //     }
-    //     //     // },
-    //     // }).promise;
-    //     //
-    //     // const getJsonData = async () => {
-    //     //     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-    //     //
-    //     //     // 1️⃣ Read file as string
-    //     //     const jsonString = await RNFS.readFile(path, 'utf8');
-    //     //
-    //     //     // 2️⃣ Parse JSON
-    //     //     const data = JSON.parse(jsonString);
-    //     //
-    //     //     return data;
-    //     // };
+        // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
+        // const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+        //
+        //
+        // const download = await RNFS.downloadFile({
+        //     fromUrl: api,
+        //     toFile: path,
+        //     // progressDivider: 5,
+        //     // progress: (res) => {
+        //     //     if (res.contentLength > 0) {
+        //     //         const progress = (
+        //     //             res.bytesWritten / res.contentLength
+        //     //         ).toFixed(2);
+        //     //         console.log('Progress:', progress);
+        //     //     }
+        //     // },
+        // }).promise;
+        //
+        // const getJsonData = async () => {
+        //     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+        //
+        //     // 1️⃣ Read file as string
+        //     const jsonString = await RNFS.readFile(path, 'utf8');
+        //
+        //     // 2️⃣ Parse JSON
+        //     const data = JSON.parse(jsonString);
+        //
+        //     return data;
+        // };
     //
     //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
     //     // try {
@@ -365,6 +390,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
           DROP TABLE IF EXISTS ORDER_CONTACTS;
         `);
         await createOrdersDB();
+        setDownloadBETime(0);
         setSaveSQLiteDBTime(0);
         setGetSQLiteDBTime(0);
         // await db.closeAsync();
@@ -375,5 +401,13 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         createOrdersDB().catch((e: Error): void => console.log(e));
     }, []);
 
-    return {orders, saveSQLiteDBTime, getSQLiteDBTime, getOrders, writeOrders, deleteOrdersDB}
+    return {
+        orders,
+        downloadSQLiteBETime,
+        saveSQLiteDBTime,
+        getSQLiteDBTime,
+        getOrders,
+        writeOrders,
+        deleteOrdersDB
+    }
 }
