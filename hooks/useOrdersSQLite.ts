@@ -1,11 +1,10 @@
 import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
-import RNFS from 'react-native-fs';
 
 import {getDB} from "@/sqlite";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
 import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
-import {hashValues} from "@/utils";
+import {getBEData, hashValues} from "@/utils";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
@@ -133,29 +132,15 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const writeOrders = useCallback(async (): Promise<void> => {
         setDownloadSQLiteBETime(0);
         setSaveSQLiteDBTime(0);
-        const start = Date.now();
-        // const orders = mock_data_29_4.orders;
-        // const products = mock_data_29_4.products;
-        const db: SQLiteDatabase = await getDB();
+        const start: number = Date.now();
 
-        const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/sync-lite";
-        const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-
-        const download = await RNFS.downloadFile({
-            fromUrl: api,
-            toFile: path,
-        }).promise;
-
-        const getJsonData = async () => {
-            const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-            const jsonString = await RNFS.readFile(path, 'utf8');
-            return JSON.parse(jsonString);
-        };
-
-        let objectData = await getJsonData();
-        setBEData(objectData);
+        const objectData: any = await getBEData();
         setDownloadSQLiteBETime(Date.now() - start);
+
+        setBEData(objectData);
+
         const startDB = Date.now();
+        const db: SQLiteDatabase = await getDB();
 
         const orders = objectData.orders;
         const products = objectData.products;
@@ -274,10 +259,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     //     const products = mock_data_29_4.products;
     //     const db: SQLiteDatabase = await getDB();
     //
-        // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
-        // const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-        //
-        //
+
         // const download = await RNFS.downloadFile({
         //     fromUrl: api,
         //     toFile: path,
@@ -291,18 +273,6 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         //     //     }
         //     // },
         // }).promise;
-        //
-        // const getJsonData = async () => {
-        //     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-        //
-        //     // 1️⃣ Read file as string
-        //     const jsonString = await RNFS.readFile(path, 'utf8');
-        //
-        //     // 2️⃣ Parse JSON
-        //     const data = JSON.parse(jsonString);
-        //
-        //     return data;
-        // };
     //
     //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
     //     // try {

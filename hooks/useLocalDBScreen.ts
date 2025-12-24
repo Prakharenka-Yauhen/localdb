@@ -19,8 +19,7 @@ import {
 } from "@/watermelonDB/models";
 // import preview from '../watermelonDB/exampleFiles/preview.json';
 // import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
-import RNFS from "react-native-fs";
-import {hashValues} from "@/utils";
+import {getBEData, hashValues} from "@/utils";
 
 type UseLocalDBScreenProps = {
     ordersList: Order[];
@@ -74,24 +73,12 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             setSaveTime(0);
             const start: number = Date.now();
 
-            const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/sync-lite";
-            const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-
-            const download = await RNFS.downloadFile({
-                fromUrl: api,
-                toFile: path,
-            }).promise;
-
-            const getJsonData = async () => {
-                const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-                const jsonString = await RNFS.readFile(path, 'utf8');
-                return JSON.parse(jsonString);
-            };
-
-            let objectData = await getJsonData();
-            setBEData(objectData);
+            const objectData: any = await getBEData();
             setDownloadTime(Date.now() - start);
-            const startDB = Date.now();
+
+            setBEData(objectData);
+
+            const startDB: number = Date.now();
 
             const orders = objectData.orders;
             const products = objectData.products;
@@ -286,8 +273,10 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         await database.write(async (): Promise<void> => {
             await database.unsafeResetDatabase();
         });
+        setDownloadTime(0);
         setSaveTime(0);
         setGetTime(0);
+        setHashTime(0);
     }, []);
 
     const hashAllValues = (): void => {
