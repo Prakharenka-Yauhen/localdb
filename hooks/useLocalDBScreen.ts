@@ -1,4 +1,5 @@
 import {useCallback, useState} from "react";
+import DeviceInfo from "react-native-device-info";
 
 import {
     database,
@@ -27,6 +28,7 @@ type UseLocalDBScreenProps = {
     saveTime: number;
     getTime: number;
     hashTime: number;
+    ramUsage: number;
     getDBData: () => void;
     writeDBData: () => void;
     updateDBData: (post: Order) => void;
@@ -42,14 +44,18 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     const [saveTime, setSaveTime] = useState<number>(0);
     const [getTime, setGetTime] = useState<number>(0);
     const [hashTime, setHashTime] = useState<number>(0);
+    const [ramUsage, setRamUsage] = useState<number>(0);
 
     const getDBData = useCallback(async (): Promise<void> => {
         setGetTime(0);
+        setRamUsage(0);
         const start: number = Date.now();
         try {
             const existingProducts: Product[] = await productsCollection.query().fetch();
             const existingOrders: Order[] = await ordersCollection.query().fetch();
             const existingContacts: Contact[] = await contactsCollection.query().fetch();
+            const usedMemory: number = await DeviceInfo.getUsedMemory();
+            setRamUsage(usedMemory / 1024 / 1024);
             const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
             const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
             const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
@@ -71,6 +77,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         try {
             setDownloadTime(0);
             setSaveTime(0);
+            setRamUsage(0);
             const start: number = Date.now();
 
             const objectData: any = await getBEData();
@@ -119,6 +126,9 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             await database.write(async (): Promise<void> => {
                 await database.batch(...batchProducts)
             });
+
+            const usedMemory: number = await DeviceInfo.getUsedMemory();
+            setRamUsage(usedMemory / 1024 / 1024);
 
             const batch: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
             const batch2: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
@@ -277,6 +287,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         setSaveTime(0);
         setGetTime(0);
         setHashTime(0);
+        setRamUsage(0);
     }, []);
 
     const hashAllValues = useCallback((): void => {
@@ -292,6 +303,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         saveTime,
         getTime,
         hashTime,
+        ramUsage,
         getDBData,
         writeDBData,
         updateDBData,

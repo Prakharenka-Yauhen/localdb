@@ -20,7 +20,7 @@ export const getBEData = async (): Promise<any> => {
 }
 
 export const sendBEData = async (): Promise<void> => {
-        const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/crud/1/1";
+        const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/crud/test/Yauhen";
         const mockBody =  {
             "order_id": "ORD-146afbe8-e072-4475-b493-d800446f671e",
             "created_at": "2025-09-22",
@@ -61,10 +61,6 @@ export const sendBEData = async (): Promise<void> => {
 
         try {
             await axios.post(api, {
-                params: {
-                    entity: 'test',
-                    id: 'Yauhen'
-                },
                 body: JSON.stringify(mockBody),
             });
         } catch (error) {

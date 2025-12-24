@@ -1,11 +1,11 @@
 import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
+import DeviceInfo from 'react-native-device-info';
 
 import {getDB} from "@/sqlite";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
 import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
-import {getBEData, hashValues} from "@/utils";
-import {sendBEData} from "@/utils/beRequests";
+import {getBEData, sendBEData, hashValues} from "@/utils";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
@@ -15,6 +15,7 @@ type UseOrdersSQLiteProps= {
     hashSQLiteTime: number;
     saveDataTime: number;
     saveParallelDataTime: number;
+    ramSQLiteUsage: number;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
@@ -32,6 +33,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [hashSQLiteTime, setHashSQLiteTime] = useState<number>(0);
     const [saveDataTime, setSaveDataTime] = useState<number>(0);
     const [saveParallelDataTime, setSaveParallelDataTime] = useState<number>(0);
+    const [ramSQLiteUsage, setRamSQLiteUsage] = useState<number>(0);
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
@@ -104,6 +106,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
 
     const getOrders = useCallback(async (): Promise<void> => {
         setGetSQLiteDBTime(0);
+        setRamSQLiteUsage(0);
         const start: number = Date.now();
         const db: SQLiteDatabase = await getDB();
         const productsDB: any[] = await db.getAllAsync(
@@ -115,6 +118,8 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         const contactsDB: any[] = await db.getAllAsync(
             `SELECT * FROM CONTACTS`
         );
+        const usedMemory: number = await DeviceInfo.getUsedMemory();
+        setRamSQLiteUsage(usedMemory / 1024 / 1024);
         const productOrdersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDER_PRODUCTS`
         );
@@ -139,6 +144,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const writeOrders = useCallback(async (): Promise<void> => {
         setDownloadSQLiteBETime(0);
         setSaveSQLiteDBTime(0);
+        setRamSQLiteUsage(0);
         const start: number = Date.now();
 
         const objectData: any = await getBEData();
@@ -234,6 +240,9 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
                     ]);
                 }
             }
+
+            const usedMemory: number = await DeviceInfo.getUsedMemory();
+            setRamSQLiteUsage(usedMemory / 1024 / 1024);
 
             // Products
             for (const product of products) {
@@ -375,6 +384,9 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setSaveSQLiteDBTime(0);
         setGetSQLiteDBTime(0);
         setHashSQLiteTime(0);
+        setSaveDataTime(0);
+        setSaveParallelDataTime(0);
+        setRamSQLiteUsage(0);
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
     }, [createOrdersDB]);
@@ -399,11 +411,9 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setSaveParallelDataTime(0);
         const start: number = Date.now();
         const promises: any[] = [];
-
         for (let i: number = 0; i < 10; i++) {
             promises.push(sendBEData());
         }
-
         await Promise.all(promises);
         setSaveParallelDataTime(Date.now() - start);
     }, []);
@@ -420,6 +430,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         hashSQLiteTime,
         saveDataTime,
         saveParallelDataTime,
+        ramSQLiteUsage,
         getOrders,
         writeOrders,
         deleteOrdersDB,

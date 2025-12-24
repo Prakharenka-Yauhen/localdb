@@ -13,6 +13,7 @@ export default function LocalDBScreen(): JSX.Element {
         saveTime,
         getTime,
         hashTime,
+        ramUsage,
         getDBData,
         writeDBData,
         resetDBData,
@@ -25,6 +26,7 @@ export default function LocalDBScreen(): JSX.Element {
         hashSQLiteTime,
         saveDataTime,
         saveParallelDataTime,
+        ramSQLiteUsage,
         getOrders,
         writeOrders,
         deleteOrdersDB,
@@ -72,16 +74,18 @@ export default function LocalDBScreen(): JSX.Element {
                     saveOrdersParallel();
                 }} style={styles.saveButton} />
             </View>
-            <ScrollView>
+            <ScrollView contentContainerStyle={{paddingBottom: 10}}>
                 <Text style={styles.text}>{`Download time to Watermelon: ${downloadTime}`}</Text>
                 <Text style={styles.text}>{`Save time to Watermelon: ${saveTime}`}</Text>
                 <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
                 <Text style={styles.text}>{`Hash Watermelon Time: ${hashTime}`}</Text>
+                <Text style={styles.text}>{`RAM usage: ${ramUsage}`}</Text>
                 <Text></Text>
                 <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
                 <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
                 <Text style={styles.text}>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
                 <Text style={styles.text}>{`Hash SQLite Time: ${hashSQLiteTime}`}</Text>
+                <Text style={styles.text}>{`RAM SQLite usage: ${ramSQLiteUsage}`}</Text>
                 <Text></Text>
                 <Text style={styles.text}>{`Save one by one data time: ${saveDataTime}`}</Text>
                 <Text style={styles.text}>{`Save parallel data time: ${saveParallelDataTime}`}</Text>

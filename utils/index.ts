@@ -1,2 +1,2 @@
-export { getBEData } from './beRequests'
+export { getBEData, sendBEData } from './beRequests'
 export { hashValues } from './hashValues'
