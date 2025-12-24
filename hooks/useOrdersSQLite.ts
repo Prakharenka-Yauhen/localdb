@@ -5,6 +5,7 @@ import {getDB} from "@/sqlite";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
 import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
 import {getBEData, hashValues} from "@/utils";
+import {sendBEData} from "@/utils/beRequests";
 
 type UseOrdersSQLiteProps= {
     orders: any[];
@@ -12,10 +13,14 @@ type UseOrdersSQLiteProps= {
     saveSQLiteDBTime: number;
     getSQLiteDBTime: number;
     hashSQLiteTime: number;
+    saveDataTime: number;
+    saveParallelDataTime: number;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
     hashAllSQLiteValues: () => void;
+    saveOrders: () => Promise<void>;
+    saveOrdersParallel: () => Promise<void>;
 }
 
 export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
@@ -25,6 +30,8 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
     const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
     const [hashSQLiteTime, setHashSQLiteTime] = useState<number>(0);
+    const [saveDataTime, setSaveDataTime] = useState<number>(0);
+    const [saveParallelDataTime, setSaveParallelDataTime] = useState<number>(0);
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
@@ -370,14 +377,36 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setHashSQLiteTime(0);
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
-    }, []);
+    }, [createOrdersDB]);
 
-    const hashAllSQLiteValues = (): void => {
+    const hashAllSQLiteValues = useCallback((): void => {
         setHashSQLiteTime(0);
         const start: number = Date.now();
         hashValues(BEData);
         setHashSQLiteTime(Date.now() - start);
-    };
+    }, [BEData]);
+
+    const saveOrders = useCallback(async (): Promise<void> => {
+        setSaveDataTime(0);
+        const start: number = Date.now();
+        for (let i: number = 0; i < 10; i++) {
+            await sendBEData();
+        }
+        setSaveDataTime(Date.now() - start);
+    }, []);
+
+    const saveOrdersParallel = useCallback(async (): Promise<void> => {
+        setSaveParallelDataTime(0);
+        const start: number = Date.now();
+        const promises: any[] = [];
+
+        for (let i: number = 0; i < 10; i++) {
+            promises.push(sendBEData());
+        }
+
+        await Promise.all(promises);
+        setSaveParallelDataTime(Date.now() - start);
+    }, []);
 
     useEffect(() => {
         createOrdersDB().catch((e: Error): void => console.log(e));
@@ -389,9 +418,13 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         saveSQLiteDBTime,
         getSQLiteDBTime,
         hashSQLiteTime,
+        saveDataTime,
+        saveParallelDataTime,
         getOrders,
         writeOrders,
         deleteOrdersDB,
-        hashAllSQLiteValues
+        hashAllSQLiteValues,
+        saveOrders,
+        saveOrdersParallel
     }
 }

@@ -279,12 +279,12 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         setHashTime(0);
     }, []);
 
-    const hashAllValues = (): void => {
+    const hashAllValues = useCallback((): void => {
         setHashTime(0);
         const start: number = Date.now();
         hashValues(BEData);
         setHashTime(Date.now() - start);
-    };
+    }, [BEData]);
 
     return {
         ordersList,

@@ -19,17 +19,54 @@ export const getBEData = async (): Promise<any> => {
     return await getJsonData();
 }
 
-export const sendBEData = async (body: any): Promise<void> => {
+export const sendBEData = async (): Promise<void> => {
         const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/crud/1/1";
+        const mockBody =  {
+            "order_id": "ORD-146afbe8-e072-4475-b493-d800446f671e",
+            "created_at": "2025-09-22",
+            "contact_id": "Devin_Johnston",
+            "contract_id": "CA-eff3b56e-160a-4654-85e1-3ede21c4d527",
+            "contacts": [
+                {
+                    "full_name": "Devin Johnston",
+                    "email": "devin.johnston@hilll llc.com",
+                    "phone": "(481) 827-9467",
+                    "company": "Hilll LLC"
+                },
+                {
+                    "full_name": "Rudolf Bechtelar",
+                    "email": "rudolf.bechtelar@ullrich-kemmer.com",
+                    "phone": "460-148-8180",
+                    "company": "Ullrich-Kemmer"
+                }
+            ],
+            "products_orders": [
+                {
+                    "product_id": "product_1",
+                    "price": 1087.9,
+                    "quantity": 1950
+                },
+                {
+                    "product_id": "product_2",
+                    "price": 387.55,
+                    "quantity": 1919
+                }
+            ],
+            "contract_agreement": {
+                "contract_id": "CA-eff3b56e-160a-4654-85e1-3ede21c4d527",
+                "title": "Service Agreement",
+                "signed_date": "2025-06-01"
+            }
+        }
+
         try {
-            const response = await axios.post(api, {
+            await axios.post(api, {
                 params: {
                     entity: 'test',
                     id: 'Yauhen'
                 },
-                body,
+                body: JSON.stringify(mockBody),
             });
-            console.log(response);
         } catch (error) {
             console.log(error)
         }
