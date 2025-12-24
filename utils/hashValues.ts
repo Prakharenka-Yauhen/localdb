@@ -5,11 +5,11 @@ const hashValue = (value: any): string => {
 };
 
 export const hashValues = (BEData: any): void => {
-    const orders = BEData.orders;
-    const products = BEData.products;
+    const orders: any[] = BEData.orders;
+    const products: any[] = BEData.products;
 
     orders.forEach((order: any): void => {
-        const hashedOrder = {};
+        const hashedOrder: Record<string, any> = {};
 
         Object.keys(order).forEach((key: string): void => {
             const value: any = order[key];
@@ -18,7 +18,7 @@ export const hashValues = (BEData: any): void => {
                 hashedOrder[key] = [];
 
                 value.forEach(item => {
-                    const hashedItem = {};
+                    const hashedItem: Record<string, any> = {};
                     Object.keys(item).forEach((itemKey: string): void => {
                         hashedItem[itemKey] = hashValue(item[itemKey]);
                     });
@@ -36,7 +36,7 @@ export const hashValues = (BEData: any): void => {
     });
 
     products.forEach((product: any): void => {
-        const hashedProduct = {};
+        const hashedProduct: Record<string, any> = {};
 
         Object.keys(product).forEach((key: string): void => {
             hashedProduct[key] = hashValue(product[key]);

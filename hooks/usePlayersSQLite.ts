@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
 import axios from "axios";
 
-import {getDB} from "@/sqlite";
+import {getDB} from "@/sqliteDB";
 
 type PlayerProps = {
     playerId: string;

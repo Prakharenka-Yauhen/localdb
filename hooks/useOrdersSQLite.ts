@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
 import DeviceInfo from 'react-native-device-info';
 
-import {getDB} from "@/sqlite";
+import {getDB} from "@/sqliteDB";
 import preview from "@/watermelonDB/exampleFiles/preview.json";
 import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
 import {getBEData, sendBEData, hashValues} from "@/utils";
