@@ -51,7 +51,7 @@ export default function LocalDBScreen(): JSX.Element {
                 }} style={styles.writeButton} />
                 <Button title={'Hash WaterDB data'} onPress={() => {
                     hashAllValues();
-                }} style={styles.writeButton} />
+                }} style={styles.hashButton} />
             </View>
             <View style={styles.horizontal}>
                 <Button title={'Get SQliteDB data'} onPress={() => {
@@ -62,7 +62,7 @@ export default function LocalDBScreen(): JSX.Element {
                 }} style={styles.writeButton} />
                 <Button title={'Hash SQliteDB data'} onPress={() => {
                     hashAllSQLiteValues();
-                }} style={styles.writeButton} />
+                }} style={styles.hashButton} />
             </View>
             <View style={styles.horizontal}>
                 <Button title={'Save DB data one by one'} onPress={() => {
@@ -79,7 +79,7 @@ export default function LocalDBScreen(): JSX.Element {
                 <Text style={styles.text}>{`Save time to Watermelon: ${saveTime}`}</Text>
                 <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
                 <Text style={styles.text}>{`Hash Watermelon Time: ${hashTime}`}</Text>
-                <Text style={styles.text}>{`RAM usage: ${ramUsage}`}</Text>
+                <Text style={styles.text}>{`RAM Watermelon usage: ${ramUsage}`}</Text>
                 <Text></Text>
                 <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
                 <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
@@ -120,6 +120,9 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         backgroundColor: 'orange'
+    },
+    hashButton: {
+        backgroundColor: 'violet'
     },
     writeButton: {
         backgroundColor: 'green'
