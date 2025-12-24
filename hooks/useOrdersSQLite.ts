@@ -1,16 +1,15 @@
 import {useCallback, useEffect, useState} from "react";
 import {SQLiteDatabase} from "expo-sqlite";
-import DeviceInfo from 'react-native-device-info';
 
 import {getDB} from "@/sqliteDB";
-import {getBEData, hashValues} from "@/utils";
+import {getBEData, getRAMMemory, hashValues} from "@/utils";
 
 type UseOrdersSQLiteProps= {
     downloadSQLiteBETime: number;
     saveSQLiteDBTime: number;
     getSQLiteDBTime: number;
     hashSQLiteTime: number;
-    ramSQLiteUsage: number;
+    ramSQLiteUsage: string;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
@@ -23,7 +22,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
     const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
     const [hashSQLiteTime, setHashSQLiteTime] = useState<number>(0);
-    const [ramSQLiteUsage, setRamSQLiteUsage] = useState<number>(0);
+    const [ramSQLiteUsage, setRamSQLiteUsage] = useState<string>('0');
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();
@@ -96,7 +95,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
 
     const getOrders = useCallback(async (): Promise<void> => {
         setGetSQLiteDBTime(0);
-        setRamSQLiteUsage(0);
+        setRamSQLiteUsage('0');
         const start: number = Date.now();
         const db: SQLiteDatabase = await getDB();
         const productsDB: any[] = await db.getAllAsync(
@@ -108,8 +107,8 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         const contactsDB: any[] = await db.getAllAsync(
             `SELECT * FROM CONTACTS`
         );
-        const usedMemory: number = await DeviceInfo.getUsedMemory();
-        setRamSQLiteUsage(usedMemory / 1024 / 1024);
+        const usedMemory: string = await getRAMMemory();
+        setRamSQLiteUsage(usedMemory);
         const productOrdersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDER_PRODUCTS`
         );
@@ -133,7 +132,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
     const writeOrders = useCallback(async (): Promise<void> => {
         setDownloadSQLiteBETime(0);
         setSaveSQLiteDBTime(0);
-        setRamSQLiteUsage(0);
+        setRamSQLiteUsage('0');
         const start: number = Date.now();
 
         const objectData: any = await getBEData();
@@ -230,8 +229,8 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
                 }
             }
 
-            const usedMemory: number = await DeviceInfo.getUsedMemory();
-            setRamSQLiteUsage(usedMemory / 1024 / 1024);
+            const usedMemory: string = await getRAMMemory();
+            setRamSQLiteUsage(usedMemory);
 
             // Products
             for (const product of products) {
@@ -373,7 +372,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setSaveSQLiteDBTime(0);
         setGetSQLiteDBTime(0);
         setHashSQLiteTime(0);
-        setRamSQLiteUsage(0);
+        setRamSQLiteUsage('0');
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
     }, [createOrdersDB]);
