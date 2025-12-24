@@ -2,7 +2,7 @@ import {ScrollView, StyleSheet, Text, View} from "react-native";
 import {JSX} from "react";
 
 import {Button} from "@/components/Button";
-import {useGetPlayers, useLocalDBScreen, useOrdersSQLite} from "@/hooks";
+import {useGetPlayers, useLocalDBScreen, useOrdersSQLite, useSaveBEData} from "@/hooks";
 import OrdersList from "@/app/components/OrdersList";
 import PlayersList from "@/app/components/PlayersList";
 
@@ -24,16 +24,19 @@ export default function LocalDBScreen(): JSX.Element {
         saveSQLiteDBTime,
         getSQLiteDBTime,
         hashSQLiteTime,
-        saveDataTime,
-        saveParallelDataTime,
         ramSQLiteUsage,
         getOrders,
         writeOrders,
         deleteOrdersDB,
         hashAllSQLiteValues,
-        saveOrders,
-        saveOrdersParallel
     } = useOrdersSQLite();
+    const {
+        saveOrdersOneByOneTime,
+        saveOrdersParallelTime,
+        saveOrdersOneByOne,
+        saveOrdersParallel,
+        resetSaveOrdersTimes
+    } = useSaveBEData();
 
     return <View style={styles.container}>
         <View style={styles.content}>
@@ -66,7 +69,7 @@ export default function LocalDBScreen(): JSX.Element {
             </View>
             <View style={styles.horizontal}>
                 <Button title={'Save DB data one by one'} onPress={() => {
-                    saveOrders();
+                    saveOrdersOneByOne();
                 }} style={styles.saveButton} />
             </View>
             <View style={styles.horizontal}>
@@ -87,8 +90,8 @@ export default function LocalDBScreen(): JSX.Element {
                 <Text style={styles.text}>{`Hash SQLite Time: ${hashSQLiteTime}`}</Text>
                 <Text style={styles.text}>{`RAM SQLite usage: ${ramSQLiteUsage}`}</Text>
                 <Text></Text>
-                <Text style={styles.text}>{`Save one by one data time: ${saveDataTime}`}</Text>
-                <Text style={styles.text}>{`Save parallel data time: ${saveParallelDataTime}`}</Text>
+                <Text style={styles.text}>{`Save one by one data time: ${saveOrdersOneByOneTime}`}</Text>
+                <Text style={styles.text}>{`Save parallel data time: ${saveOrdersParallelTime}`}</Text>
                 {/*<OrdersList />*/}
             </ScrollView>
         </View>
@@ -96,6 +99,7 @@ export default function LocalDBScreen(): JSX.Element {
             <Button title={'Reset DB data'} onPress={() => {
                 resetDBData();
                 deleteOrdersDB();
+                resetSaveOrdersTimes();
             }} style={styles.deleteButton} />
         </View>
     </View>

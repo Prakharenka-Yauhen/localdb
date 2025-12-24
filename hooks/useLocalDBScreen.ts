@@ -18,12 +18,9 @@ import {
     ProductOrder,
     ContractAgreement
 } from "@/watermelonDB/models";
-// import preview from '../watermelonDB/exampleFiles/preview.json';
-// import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
 import {getBEData, hashValues} from "@/utils";
 
 type UseLocalDBScreenProps = {
-    ordersList: Order[];
     downloadTime: number;
     saveTime: number;
     getTime: number;
@@ -38,7 +35,6 @@ type UseLocalDBScreenProps = {
 }
 
 export const useLocalDBScreen = (): UseLocalDBScreenProps => {
-    const [ordersList, setOrdersList] = useState<Order[]>([]);
     const [BEData, setBEData] = useState<object | null>(null);
     const [downloadTime, setDownloadTime] = useState<number>(0);
     const [saveTime, setSaveTime] = useState<number>(0);
@@ -59,13 +55,13 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
             const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
             const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
-            console.log('getDBData')
-            console.log(existingProducts.length)
-            console.log(existingOrders.length)
-            console.log(existingContacts.length)
-            console.log(existingProductOrders.length)
-            console.log(existingContractAgreements.length)
-            console.log(existingOrderContacts.length)
+            console.log('getDBData');
+            console.log(existingProducts.length);
+            console.log(existingOrders.length);
+            console.log(existingContacts.length);
+            console.log(existingProductOrders.length);
+            console.log(existingContractAgreements.length);
+            console.log(existingOrderContacts.length);
         } catch (e) {
             console.log(e)
         }
@@ -298,7 +294,6 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
     }, [BEData]);
 
     return {
-        ordersList,
         downloadTime,
         saveTime,
         getTime,

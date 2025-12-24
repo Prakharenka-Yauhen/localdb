@@ -3,36 +3,26 @@ import {SQLiteDatabase} from "expo-sqlite";
 import DeviceInfo from 'react-native-device-info';
 
 import {getDB} from "@/sqliteDB";
-import preview from "@/watermelonDB/exampleFiles/preview.json";
-import mock_data_29_4 from "@/watermelonDB/exampleFiles/mock_data_29_4.json";
-import {getBEData, sendBEData, hashValues} from "@/utils";
+import {getBEData, hashValues} from "@/utils";
 
 type UseOrdersSQLiteProps= {
-    orders: any[];
     downloadSQLiteBETime: number;
     saveSQLiteDBTime: number;
     getSQLiteDBTime: number;
     hashSQLiteTime: number;
-    saveDataTime: number;
-    saveParallelDataTime: number;
     ramSQLiteUsage: number;
     getOrders: () => Promise<void>;
     writeOrders: () => Promise<void>;
     deleteOrdersDB: () => Promise<void>;
     hashAllSQLiteValues: () => void;
-    saveOrders: () => Promise<void>;
-    saveOrdersParallel: () => Promise<void>;
 }
 
 export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
-    const [orders, setOrders] = useState<any[]>([]);
     const [BEData, setBEData] = useState<object | null>(null);
     const [downloadSQLiteBETime, setDownloadSQLiteBETime] = useState<number>(0);
     const [saveSQLiteDBTime, setSaveSQLiteDBTime] = useState<number>(0);
     const [getSQLiteDBTime, setGetSQLiteDBTime] = useState<number>(0);
     const [hashSQLiteTime, setHashSQLiteTime] = useState<number>(0);
-    const [saveDataTime, setSaveDataTime] = useState<number>(0);
-    const [saveParallelDataTime, setSaveParallelDataTime] = useState<number>(0);
     const [ramSQLiteUsage, setRamSQLiteUsage] = useState<number>(0);
 
     const createOrdersDB = useCallback(async (): Promise<void> => {
@@ -129,14 +119,13 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         const orderContactsDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDER_CONTACTS`
         );
-        console.log('getOrders')
-        console.log(productsDB.length)
-        console.log(ordersDB.length)
-        console.log(contactsDB.length)
-        console.log(productOrdersDB.length)
-        console.log(contractAgreementsDB.length)
-        console.log(orderContactsDB.length)
-        // setOrders(ordersDB);
+        console.log('getOrders');
+        console.log(productsDB.length);
+        console.log(ordersDB.length);
+        console.log(contactsDB.length);
+        console.log(productOrdersDB.length);
+        console.log(contractAgreementsDB.length);
+        console.log(orderContactsDB.length);
         const end: number = Date.now();
         setGetSQLiteDBTime(end - start);
     }, []);
@@ -384,8 +373,6 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setSaveSQLiteDBTime(0);
         setGetSQLiteDBTime(0);
         setHashSQLiteTime(0);
-        setSaveDataTime(0);
-        setSaveParallelDataTime(0);
         setRamSQLiteUsage(0);
         // await db.closeAsync();
         // await deleteDatabaseAsync(DB_NAME);
@@ -398,44 +385,20 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setHashSQLiteTime(Date.now() - start);
     }, [BEData]);
 
-    const saveOrders = useCallback(async (): Promise<void> => {
-        setSaveDataTime(0);
-        const start: number = Date.now();
-        for (let i: number = 0; i < 10; i++) {
-            await sendBEData();
-        }
-        setSaveDataTime(Date.now() - start);
-    }, []);
-
-    const saveOrdersParallel = useCallback(async (): Promise<void> => {
-        setSaveParallelDataTime(0);
-        const start: number = Date.now();
-        const promises: any[] = [];
-        for (let i: number = 0; i < 10; i++) {
-            promises.push(sendBEData());
-        }
-        await Promise.all(promises);
-        setSaveParallelDataTime(Date.now() - start);
-    }, []);
-
-    useEffect(() => {
+    useEffect((): void => {
         createOrdersDB().catch((e: Error): void => console.log(e));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return {
-        orders,
         downloadSQLiteBETime,
         saveSQLiteDBTime,
         getSQLiteDBTime,
         hashSQLiteTime,
-        saveDataTime,
-        saveParallelDataTime,
         ramSQLiteUsage,
         getOrders,
         writeOrders,
         deleteOrdersDB,
         hashAllSQLiteValues,
-        saveOrders,
-        saveOrdersParallel
     }
 }
