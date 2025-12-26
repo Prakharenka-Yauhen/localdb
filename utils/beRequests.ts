@@ -1,3 +1,4 @@
+import {Alert} from "react-native";
 import RNFS from "react-native-fs";
 import axios from "axios";
 
@@ -11,12 +12,16 @@ export const getBEData = async (): Promise<any> => {
     const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/sync-lite";
     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
 
-    await RNFS.downloadFile({
-        fromUrl: api,
-        toFile: path,
-    }).promise;
+    try {
+        await RNFS.downloadFile({
+            fromUrl: api,
+            toFile: path,
+        }).promise;
 
-    return await getJsonData();
+        return await getJsonData();
+    } catch (e: unknown) {
+        Alert.alert('Error downloading BE data', JSON.stringify(e));
+    }
 }
 
 export const sendBEData = async (): Promise<void> => {
@@ -64,6 +69,6 @@ export const sendBEData = async (): Promise<void> => {
                 body: JSON.stringify(mockBody),
             });
         } catch (error) {
-            console.log(error)
+            Alert.alert('Error sending BE data', JSON.stringify(error));
         }
 }

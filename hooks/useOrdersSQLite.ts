@@ -54,13 +54,14 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             )
       `);
 
+        // noinspection SqlResolve
         await db.execAsync(`
             CREATE TABLE IF NOT EXISTS ORDER_CONTACTS (
                 order_id TEXT NOT NULL,
                 contact_id INTEGER NOT NULL,
                 PRIMARY KEY (order_id, contact_id),
-                FOREIGN KEY (order_id) REFERENCES orders(order_id),
-                FOREIGN KEY (contact_id) REFERENCES contacts(contact_id)
+                FOREIGN KEY (order_id) REFERENCES ORDERS(order_id),
+                FOREIGN KEY (contact_id) REFERENCES CONTACTS(contact_id)
             )
       `);
 
@@ -72,6 +73,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             )
       `);
 
+        // noinspection SqlResolve
         await db.execAsync(`
             CREATE TABLE IF NOT EXISTS ORDER_PRODUCTS (
                 order_id TEXT NOT NULL,
@@ -79,8 +81,8 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
                 price REAL NOT NULL,
                 quantity INTEGER NOT NULL,
                 PRIMARY KEY (order_id, product_id),
-                FOREIGN KEY (order_id) REFERENCES orders(order_id),
-                FOREIGN KEY (product_id) REFERENCES products(product_id)
+                FOREIGN KEY (order_id) REFERENCES ORDERS(order_id),
+                FOREIGN KEY (product_id) REFERENCES PRODUCTS(product_id)
             )
       `);
 
@@ -98,23 +100,29 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setRamSQLiteUsage('0');
         const start: number = Date.now();
         const db: SQLiteDatabase = await getDB();
+        // noinspection SqlResolve
         const productsDB: any[] = await db.getAllAsync(
             `SELECT * FROM PRODUCTS`
         );
+        // noinspection SqlResolve
         const ordersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDERS`
         );
+        // noinspection SqlResolve
         const contactsDB: any[] = await db.getAllAsync(
             `SELECT * FROM CONTACTS`
         );
         const usedMemory: string = await getRAMMemory();
         setRamSQLiteUsage(usedMemory);
+        // noinspection SqlResolve
         const productOrdersDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDER_PRODUCTS`
         );
+        // noinspection SqlResolve
         const contractAgreementsDB: any[] = await db.getAllAsync(
             `SELECT * FROM CONTRACTS`
         );
+        // noinspection SqlResolve
         const orderContactsDB: any[] = await db.getAllAsync(
             `SELECT * FROM ORDER_CONTACTS`
         );
@@ -148,40 +156,46 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
 
         await db.runAsync("BEGIN TRANSACTION");
 
+        // noinspection SqlResolve
         const insertOrderStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO ORDERS
-     (order_id, created_at, contact_id, contract_id)
-     VALUES (?, ?, ?, ?)`
+                     (order_id, created_at, contact_id, contract_id)
+                     VALUES (?, ?, ?, ?)`
         );
 
+        // noinspection SqlResolve
         const insertContractStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO CONTRACTS
-     (contract_id, title, signed_date)
-     VALUES (?, ?, ?)`
+                     (contract_id, title, signed_date)
+                     VALUES (?, ?, ?)`
         );
 
+        // noinspection SqlResolve
         const insertContactStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO CONTACTS
-     (contact_id, full_name, email, phone, company)
-     VALUES (?, ?, ?, ?, ?)`
+                     (contact_id, full_name, email, phone, company)
+                     VALUES (?, ?, ?, ?, ?)`
         );
 
+        // noinspection SqlResolve
         const insertOrderContactStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO ORDER_CONTACTS
-     (order_id, contact_id)
-     VALUES (?, ?)`
+                     (order_id, contact_id)
+                     VALUES (?, ?)`
         );
 
+        // noinspection SqlResolve
         const insertOrderProductStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO ORDER_PRODUCTS
-     (order_id, product_id, price, quantity)
-     VALUES (?, ?, ?, ?)`
+                     (order_id, product_id, price, quantity)
+                     VALUES (?, ?, ?, ?)`
         );
 
+        // noinspection SqlResolve
         const insertProductStmt = await db.prepareAsync(
             `INSERT OR REPLACE INTO PRODUCTS
-     (product_id, name, recommend_price)
-     VALUES (?, ?, ?)`
+                     (product_id, name, recommend_price)
+                     VALUES (?, ?, ?)`
         );
 
         try {
