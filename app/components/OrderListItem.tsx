@@ -14,12 +14,12 @@ const OrderListItem = ({ order }: OrderListItemProps): JSX.Element => {
     const {updateDBData, deleteDBData} = useLocalDBScreen();
 
     return <View style={styles.container}>
-        <Text>{order.orderId}</Text>
+        <Text>{order.orderId.slice(0,7)}</Text>
         <Text>{order.createdAt}</Text>
-        <Text>{order.contractAgreementId}</Text>
+        <Text>{order.contractAgreementId.slice(0,7)}</Text>
         {/*<Text>{order.isPinned ? 'true' : 'false'}</Text>*/}
-        <Button title={'update'} onPress={(): void => updateDBData(order)} style={styles.updateButton} />
-        <Button title={'delete'} onPress={(): void => deleteDBData(order)} style={styles.deleteButton} />
+        {/*<Button title={'update'} onPress={(): void => updateDBData(order)} style={styles.updateButton} />*/}
+        {/*<Button title={'delete'} onPress={(): void => deleteDBData(order)} style={styles.deleteButton} />*/}
     </View>
 }
 
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderBottomWidth: 1,
         borderColor: 'lightgrey',
-        gap: 10
+        gap: 10,
     },
     updateButton: {
         backgroundColor: 'orange'
