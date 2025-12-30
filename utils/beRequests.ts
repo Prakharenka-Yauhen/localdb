@@ -4,7 +4,7 @@ import axios from "axios";
 
 const getJsonData = async () => {
     const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-    const jsonString = await RNFS.readFile(path, 'utf8');
+    const jsonString: string = await RNFS.readFile(path, 'utf8');
     return JSON.parse(jsonString);
 };
 

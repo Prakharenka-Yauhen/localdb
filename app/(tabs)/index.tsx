@@ -46,23 +46,23 @@ export default function LocalDBScreen(): JSX.Element {
             {/*</View>*/}
             {/*<PlayersList />*/}
             <View style={styles.horizontal}>
-                <Button title={'Get WaterDB data'} onPress={() => {
-                    getDBData();
-                }} style={styles.getButton} />
                 <Button title={'Write WaterDB data'} onPress={() => {
                     writeDBData();
                 }} style={styles.writeButton} />
+                <Button title={'Get WaterDB data'} onPress={() => {
+                    getDBData();
+                }} style={styles.getButton} />
                 <Button title={'Hash WaterDB data'} onPress={() => {
                     hashAllValues();
                 }} style={styles.hashButton} />
             </View>
             <View style={styles.horizontal}>
-                <Button title={'Get SQliteDB data'} onPress={() => {
-                    getOrders();
-                }} style={styles.getButton} />
                 <Button title={'Write SQliteDB data'} onPress={() => {
                     writeOrders();
                 }} style={styles.writeButton} />
+                <Button title={'Get SQliteDB data'} onPress={() => {
+                    getOrders();
+                }} style={styles.getButton} />
                 <Button title={'Hash SQliteDB data'} onPress={() => {
                     hashAllSQLiteValues();
                 }} style={styles.hashButton} />
@@ -83,13 +83,13 @@ export default function LocalDBScreen(): JSX.Element {
                 <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
                 <Text style={styles.text}>{`Hash Watermelon Time: ${hashTime}`}</Text>
                 <Text style={styles.text}>{`RAM Watermelon usage: ${ramUsage}`}</Text>
-                <Text></Text>
+                <View style={styles.line} />
                 <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
                 <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
                 <Text style={styles.text}>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
                 <Text style={styles.text}>{`Hash SQLite Time: ${hashSQLiteTime}`}</Text>
                 <Text style={styles.text}>{`RAM SQLite usage: ${ramSQLiteUsage}`}</Text>
-                <Text></Text>
+                <View style={styles.line} />
                 <Text style={styles.text}>{`Save one by one data time: ${saveOrdersOneByOneTime}`}</Text>
                 <Text style={styles.text}>{`Save parallel data time: ${saveOrdersParallelTime}`}</Text>
                 {/*<OrdersList />*/}
@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
     horizontal: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
-        marginBottom: 10,
+        gap: 5,
+        marginBottom: 5,
     },
     getButton: {
         backgroundColor: 'blue'
@@ -135,8 +135,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'red'
     },
     text: {
-        fontSize: 16,
-        lineHeight: 22,
+        fontSize: 14,
+        lineHeight: 16,
         marginTop: 10,
+    },
+    line: {
+        height: 1,
+        backgroundColor: 'black',
+        marginTop: 5,
     }
 });

@@ -23,5 +23,6 @@ const styles = StyleSheet.create({
     },
     title: {
         color: 'white',
+        fontSize: 12,
     }
 });
