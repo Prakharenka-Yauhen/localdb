@@ -38,6 +38,10 @@ export default function LocalDBScreen(): JSX.Element {
         resetSaveOrdersTimes
     } = useSaveBEData();
 
+    const getTimeString = (time: number): string => {
+        return `${(time/1000).toFixed(3)}sec (${(time/60000).toFixed(2)}min)`
+    }
+
     return <View style={styles.container}>
         <View style={styles.content}>
             {/*<View style={styles.horizontal}>*/}
@@ -78,20 +82,20 @@ export default function LocalDBScreen(): JSX.Element {
                 }} style={styles.saveButton} />
             </View>
             <ScrollView contentContainerStyle={{paddingBottom: 10}}>
-                <Text style={styles.text}>{`Download time to Watermelon: ${downloadTime}`}</Text>
-                <Text style={styles.text}>{`Save time to Watermelon: ${saveTime}`}</Text>
-                <Text style={styles.text}>{`Get time from Watermelon: ${getTime}`}</Text>
-                <Text style={styles.text}>{`Hash Watermelon Time: ${hashTime}`}</Text>
-                <Text style={styles.text}>{`RAM Watermelon usage: ${ramUsage}`}</Text>
+                <Text style={styles.text}>{`Download time to Watermelon: ${getTimeString(downloadTime)}`}</Text>
+                <Text style={styles.text}>{`Save time to Watermelon: ${getTimeString(saveTime)}`}</Text>
+                <Text style={styles.text}>{`Get time from Watermelon: ${getTimeString(getTime)}`}</Text>
+                <Text style={styles.text}>{`Hash Watermelon Time: ${getTimeString(hashTime)}`}</Text>
+                <Text style={styles.text}>{`RAM Watermelon usage: ${ramUsage}MB`}</Text>
                 <View style={styles.line} />
-                <Text style={styles.text}>{`Download time to SQLite: ${downloadSQLiteBETime}`}</Text>
-                <Text style={styles.text}>{`Save time to SQLite: ${saveSQLiteDBTime}`}</Text>
-                <Text style={styles.text}>{`Get time from SQLite: ${getSQLiteDBTime}`}</Text>
-                <Text style={styles.text}>{`Hash SQLite Time: ${hashSQLiteTime}`}</Text>
-                <Text style={styles.text}>{`RAM SQLite usage: ${ramSQLiteUsage}`}</Text>
+                <Text style={styles.text}>{`Download time to SQLite: ${getTimeString(downloadSQLiteBETime)}`}</Text>
+                <Text style={styles.text}>{`Save time to SQLite: ${getTimeString(saveSQLiteDBTime)}`}</Text>
+                <Text style={styles.text}>{`Get time from SQLite: ${getTimeString(getSQLiteDBTime)}`}</Text>
+                <Text style={styles.text}>{`Hash SQLite Time: ${getTimeString(hashSQLiteTime)}`}</Text>
+                <Text style={styles.text}>{`RAM SQLite usage: ${ramSQLiteUsage}MB`}</Text>
                 <View style={styles.line} />
-                <Text style={styles.text}>{`Save one by one data time: ${saveOrdersOneByOneTime}`}</Text>
-                <Text style={styles.text}>{`Save parallel data time: ${saveOrdersParallelTime}`}</Text>
+                <Text style={styles.text}>{`Save one by one data time: ${getTimeString(saveOrdersOneByOneTime)}`}</Text>
+                <Text style={styles.text}>{`Save parallel data time: ${getTimeString(saveOrdersParallelTime)}`}</Text>
                 {/*<OrdersList />*/}
             </ScrollView>
         </View>

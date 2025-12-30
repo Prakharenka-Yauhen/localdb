@@ -125,7 +125,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             const usedMemory: string = await getRAMMemory();
             setRamSQLiteUsage(usedMemory);
         } catch (e) {
-            Alert.alert('Error downloading BE data', JSON.stringify(e));
+            Alert.alert('Error getting DB data', JSON.stringify(e));
         }
         setGetSQLiteDBTime(Date.now() - start);
     }, []);
@@ -138,221 +138,100 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
 
         const objectData: any = await getBEData();
         setDownloadSQLiteBETime(Date.now() - start);
-
         setBEData(objectData);
 
-        const startDB = Date.now();
-        const db: SQLiteDatabase = await getDB();
-
-        const orders = objectData.orders;
-        const products = objectData.products;
-
-        await db.runAsync("BEGIN TRANSACTION");
-
-        // noinspection SqlResolve
-        const insertOrderStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO ORDERS
-                     (order_id, created_at, contact_id, contract_id)
-                     VALUES (?, ?, ?, ?)`
-        );
-
-        // noinspection SqlResolve
-        const insertContractStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO CONTRACTS
-                     (contract_id, title, signed_date)
-                     VALUES (?, ?, ?)`
-        );
-
-        // noinspection SqlResolve
-        const insertContactStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO CONTACTS
-                     (contact_id, full_name, email, phone, company)
-                     VALUES (?, ?, ?, ?, ?)`
-        );
-
-        // noinspection SqlResolve
-        const insertOrderContactStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO ORDER_CONTACTS
-                     (order_id, contact_id)
-                     VALUES (?, ?)`
-        );
-
-        // noinspection SqlResolve
-        const insertOrderProductStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO ORDER_PRODUCTS
-                     (order_id, product_id, price, quantity)
-                     VALUES (?, ?, ?, ?)`
-        );
-
-        // noinspection SqlResolve
-        const insertProductStmt = await db.prepareAsync(
-            `INSERT OR REPLACE INTO PRODUCTS
-                     (product_id, name, recommend_price)
-                     VALUES (?, ?, ?)`
-        );
+        const startDB: number = Date.now();
 
         try {
-            // Orders
-            for (const order of orders) {
-                await insertOrderStmt.executeAsync([
-                    order.order_id,
-                    order.created_at,
-                    order.contact_id,
-                    order.contract_agreement.contract_id,
-                ]);
+            const db: SQLiteDatabase = await getDB();
 
-                await insertContractStmt.executeAsync([
-                    order.contract_agreement.contract_id,
-                    order.contract_agreement.title,
-                    order.contract_agreement.signed_date,
-                ]);
+            const orders: any[] = objectData.orders;
+            const products: any[] = objectData.products;
 
-                // Contacts
-                for (const contact of order.contacts) {
-                    const contactId = contact.full_name.replace(/\s+/g, "_");
+            await db.withTransactionAsync(async () => {
+                const insertOrderStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`
+                );
+                const insertContractStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`
+                );
+                const insertContactStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO CONTACTS (contact_id, full_name, email, phone, company) VALUES (?, ?, ?, ?, ?)`
+                );
+                const insertOrderContactStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`
+                );
+                const insertOrderProductStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)`
+                );
+                const insertProductStmt = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`
+                );
 
-                    await insertContactStmt.executeAsync([
-                        contactId,
-                        contact.full_name,
-                        contact.email,
-                        contact.phone,
-                        contact.company,
-                    ]);
+                try {
+                    for (const order of orders) {
+                        await insertOrderStmt.executeAsync([
+                            order.order_id,
+                            order.created_at,
+                            order.contact_id,
+                            order.contract_agreement.contract_id,
+                        ]);
 
-                    await insertOrderContactStmt.executeAsync([
-                        order.order_id,
-                        contactId,
-                    ]);
+                        await insertContractStmt.executeAsync([
+                            order.contract_agreement.contract_id,
+                            order.contract_agreement.title,
+                            order.contract_agreement.signed_date,
+                        ]);
+
+                        for (const contact of order.contacts) {
+                            const contactId = contact.full_name.replace(/\s+/g, "_");
+                            await insertContactStmt.executeAsync([
+                                contactId,
+                                contact.full_name,
+                                contact.email,
+                                contact.phone,
+                                contact.company,
+                            ]);
+                            await insertOrderContactStmt.executeAsync([order.order_id, contactId]);
+                        }
+
+                        for (const productOrder of order.products_orders) {
+                            await insertOrderProductStmt.executeAsync([
+                                order.order_id,
+                                productOrder.product_id,
+                                productOrder.price,
+                                productOrder.quantity,
+                            ]);
+                        }
+                    }
+
+                    const usedMemory: string = await getRAMMemory();
+                    setRamSQLiteUsage(usedMemory);
+
+                    for (const product of products) {
+                        await insertProductStmt.executeAsync([
+                            product.product_id,
+                            product.name,
+                            product.recommend_price,
+                        ]);
+                    }
+                } finally {
+                    await insertOrderStmt.finalizeAsync();
+                    await insertContractStmt.finalizeAsync();
+                    await insertContactStmt.finalizeAsync();
+                    await insertOrderContactStmt.finalizeAsync();
+                    await insertOrderProductStmt.finalizeAsync();
+                    await insertProductStmt.finalizeAsync();
                 }
-
-                // Order products
-                for (const productOrder of order.products_orders) {
-                    await insertOrderProductStmt.executeAsync([
-                        order.order_id,
-                        productOrder.product_id,
-                        productOrder.price,
-                        productOrder.quantity,
-                    ]);
-                }
-            }
-
-            const usedMemory: string = await getRAMMemory();
-            setRamSQLiteUsage(usedMemory);
-
-            // Products
-            for (const product of products) {
-                await insertProductStmt.executeAsync([
-                    product.product_id,
-                    product.name,
-                    product.recommend_price,
-                ]);
-            }
-
-            await db.runAsync("COMMIT");
+            });
         } catch (e) {
-            await db.runAsync("ROLLBACK");
+            // If withTransactionAsync fails, it rolls back automatically before entering here
+            Alert.alert('Transaction failed and was rolled back:', JSON.stringify(e));
             throw e;
         } finally {
-            await insertOrderStmt.finalizeAsync();
-            await insertContractStmt.finalizeAsync();
-            await insertContactStmt.finalizeAsync();
-            await insertOrderContactStmt.finalizeAsync();
-            await insertOrderProductStmt.finalizeAsync();
-            await insertProductStmt.finalizeAsync();
-
             setSaveSQLiteDBTime(Date.now() - startDB);
         }
     }, []);
-
-    // const writeOrders = useCallback(async (): Promise<void> => {
-    //     const start: number = Date.now();
-    //     const orders = mock_data_29_4.orders;
-    //     const products = mock_data_29_4.products;
-    //     const db: SQLiteDatabase = await getDB();
-    //
-
-        // const download = await RNFS.downloadFile({
-        //     fromUrl: api,
-        //     toFile: path,
-        //     // progressDivider: 5,
-        //     // progress: (res) => {
-        //     //     if (res.contentLength > 0) {
-        //     //         const progress = (
-        //     //             res.bytesWritten / res.contentLength
-        //     //         ).toFixed(2);
-        //     //         console.log('Progress:', progress);
-        //     //     }
-        //     // },
-        // }).promise;
-    //
-    //     // const api: string = "https://vw-mock-backend.cfapps.eu10-004.hana.ondemand.com/sync";
-    //     // try {
-    //     //     const response = await axios.get(api);
-    //     // } catch (error) {
-    //     //     console.log(error)
-    //     // }
-    //
-    //     orders.forEach((order: any): void => {
-    //         db.runAsync(
-    //             `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`,
-    //             [order.order_id, order.created_at, order.contact_id, order.contract_id]
-    //         ).catch((err: Error) => {
-    //             console.log(7774);
-    //         })
-    //
-    //         db.runAsync(
-    //             `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`,
-    //             [
-    //                 order.contract_agreement.contract_id,
-    //                 order.contract_agreement.title,
-    //                 order.contract_agreement.signed_date,
-    //             ]
-    //         ).catch((err: Error) => {
-    //             console.log(7774);
-    //         });
-    //
-    //         order.contacts.forEach((contact: any): void => {
-    //             const contactId = contact.full_name.replace(/\s+/g, '_');
-    //             db.runAsync(
-    //                 `INSERT OR REPLACE INTO CONTACTS (full_name, email, phone, company) VALUES (?, ?, ?, ?)`,
-    //                 [contactId, contact.full_name, contact.email, contact.phone, contact.company]
-    //             ).catch((err: Error) => {
-    //                 console.log(7774);
-    //             });
-    //
-    //             db.runAsync(
-    //                 `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`,
-    //                 [order.order_id, contactId]
-    //             ).catch((err: Error) => {
-    //                 console.log(7774);
-    //             });
-    //         })
-    //
-    //         order.products_orders.forEach((productsOrder: any): void => {
-    //             db.runAsync(
-    //                 "INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)",
-    //                 [order.order_id, productsOrder.product_id, productsOrder.price, productsOrder.quantity]
-    //             ).catch((err: Error) => {
-    //                 console.log(7774);
-    //             }).finally(() => {
-    //                 const end: number = Date.now();
-    //                 setSaveSQLiteDBTime(end - start);
-    //             })
-    //         })
-    //     })
-    //
-    //     products.forEach((product: any): void => {
-    //         db.runAsync(
-    //             `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`,
-    //             [product.product_id, product.name, product.recommend_price]
-    //         ).then(() => {
-    //             const end: number = Date.now();
-    //             setSaveSQLiteDBTime(end - start);
-    //         }).catch((err: Error) => {
-    //             console.log(7774);
-    //         });
-    //     })
-    // }, []);
 
     const deleteOrdersDB = useCallback(async (): Promise<void> => {
         const db: SQLiteDatabase = await getDB();

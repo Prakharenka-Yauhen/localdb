@@ -58,7 +58,7 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             const usedMemory: string = await getRAMMemory();
             setRamUsage(usedMemory);
         } catch (e) {
-            Alert.alert('Error downloading BE data', JSON.stringify(e));
+            Alert.alert('Error getting DB data', JSON.stringify(e));
         }
         setGetTime(Date.now() - start);
     }, []);
