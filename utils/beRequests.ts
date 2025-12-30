@@ -2,10 +2,14 @@ import {Alert} from "react-native";
 import RNFS from "react-native-fs";
 import axios from "axios";
 
-const getJsonData = async () => {
-    const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-    const jsonString: string = await RNFS.readFile(path, 'utf8');
-    return JSON.parse(jsonString);
+const getJsonData = async (): Promise<any> => {
+    try {
+        const path = `${RNFS.DocumentDirectoryPath}/data.json`;
+        const jsonString: string = await RNFS.readFile(path, 'utf8');
+        return JSON.parse(jsonString);
+    } catch (e: unknown) {
+        Alert.alert('Error downloading BE data', JSON.stringify(e));
+    }
 };
 
 export const getBEData = async (): Promise<any> => {

@@ -1,4 +1,5 @@
 import {useCallback, useState} from "react";
+import {Alert} from "react-native";
 
 import {
     database,
@@ -46,25 +47,19 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
         setRamUsage('0');
         const start: number = Date.now();
         try {
-            const existingProducts: Product[] = await productsCollection.query().fetch();
-            const existingOrders: Order[] = await ordersCollection.query().fetch();
-            const existingContacts: Contact[] = await contactsCollection.query().fetch();
+            await Promise.all([
+                productsCollection.query().fetch(),
+                ordersCollection.query().fetch(),
+                contactsCollection.query().fetch(),
+                productOrdersCollection.query().fetch(),
+                contractAgreementsCollection.query().fetch(),
+                orderContactsCollection.query().fetch(),
+            ])
             const usedMemory: string = await getRAMMemory();
             setRamUsage(usedMemory);
-            const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
-            const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
-            const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
-            console.log('getDBData');
-            console.log(existingProducts.length);
-            console.log(existingOrders.length);
-            console.log(existingContacts.length);
-            console.log(existingProductOrders.length);
-            console.log(existingContractAgreements.length);
-            console.log(existingOrderContacts.length);
         } catch (e) {
-            console.log(e)
+            Alert.alert('Error downloading BE data', JSON.stringify(e));
         }
-        // setOrdersList(existingOrders);
         setGetTime(Date.now() - start);
     }, []);
 
@@ -82,15 +77,26 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
 
             const startDB: number = Date.now();
 
-            const orders = objectData.orders;
-            const products = objectData.products;
+            const orders: any[] = objectData.orders;
+            const products: any[] = objectData.products;
 
-            const existingProducts: Product[] = await productsCollection.query().fetch();
-            const existingOrders: Order[] = await ordersCollection.query().fetch();
-            const existingContacts: Contact[] = await contactsCollection.query().fetch();
-            const existingProductOrders: ProductOrder[] = await productOrdersCollection.query().fetch();
-            const existingContractAgreements: ContractAgreement[] = await contractAgreementsCollection.query().fetch();
-            const existingOrderContacts: OrderContact[] = await orderContactsCollection.query().fetch();
+            const [
+                existingProducts,
+                existingOrders,
+                existingContacts,
+                existingProductOrders,
+                existingContractAgreements,
+                existingOrderContacts,
+            ]: [
+                Product[], Order[], Contact[], ProductOrder[], ContractAgreement[], OrderContact[]
+            ] = await Promise.all([
+                productsCollection.query().fetch(),
+                ordersCollection.query().fetch(),
+                contactsCollection.query().fetch(),
+                productOrdersCollection.query().fetch(),
+                contractAgreementsCollection.query().fetch(),
+                orderContactsCollection.query().fetch(),
+            ])
 
             const batchProducts: (Order | ContractAgreement | Contact | OrderContact | Product | ProductOrder)[] = [];
 

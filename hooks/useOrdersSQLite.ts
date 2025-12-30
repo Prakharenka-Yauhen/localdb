@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useState} from "react";
+import {Alert} from "react-native";
 import {SQLiteDatabase} from "expo-sqlite";
 
 import {getDB} from "@/sqliteDB";
@@ -99,42 +100,34 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
         setGetSQLiteDBTime(0);
         setRamSQLiteUsage('0');
         const start: number = Date.now();
-        const db: SQLiteDatabase = await getDB();
-        // noinspection SqlResolve
-        const productsDB: any[] = await db.getAllAsync(
-            `SELECT * FROM PRODUCTS`
-        );
-        // noinspection SqlResolve
-        const ordersDB: any[] = await db.getAllAsync(
-            `SELECT * FROM ORDERS`
-        );
-        // noinspection SqlResolve
-        const contactsDB: any[] = await db.getAllAsync(
-            `SELECT * FROM CONTACTS`
-        );
-        const usedMemory: string = await getRAMMemory();
-        setRamSQLiteUsage(usedMemory);
-        // noinspection SqlResolve
-        const productOrdersDB: any[] = await db.getAllAsync(
-            `SELECT * FROM ORDER_PRODUCTS`
-        );
-        // noinspection SqlResolve
-        const contractAgreementsDB: any[] = await db.getAllAsync(
-            `SELECT * FROM CONTRACTS`
-        );
-        // noinspection SqlResolve
-        const orderContactsDB: any[] = await db.getAllAsync(
-            `SELECT * FROM ORDER_CONTACTS`
-        );
-        console.log('getOrders');
-        console.log(productsDB.length);
-        console.log(ordersDB.length);
-        console.log(contactsDB.length);
-        console.log(productOrdersDB.length);
-        console.log(contractAgreementsDB.length);
-        console.log(orderContactsDB.length);
-        const end: number = Date.now();
-        setGetSQLiteDBTime(end - start);
+        try {
+            const db: SQLiteDatabase = await getDB();
+            await Promise.all([
+                db.getAllAsync(
+                    `SELECT * FROM PRODUCTS`
+                ),
+                db.getAllAsync(
+                    `SELECT * FROM ORDERS`
+                ),
+                db.getAllAsync(
+                    `SELECT * FROM CONTACTS`
+                ),
+                db.getAllAsync(
+                    `SELECT * FROM ORDER_PRODUCTS`
+                ),
+                db.getAllAsync(
+                    `SELECT * FROM CONTRACTS`
+                ),
+                db.getAllAsync(
+                    `SELECT * FROM ORDER_CONTACTS`
+                ),
+            ])
+            const usedMemory: string = await getRAMMemory();
+            setRamSQLiteUsage(usedMemory);
+        } catch (e) {
+            Alert.alert('Error downloading BE data', JSON.stringify(e));
+        }
+        setGetSQLiteDBTime(Date.now() - start);
     }, []);
 
     const writeOrders = useCallback(async (): Promise<void> => {
