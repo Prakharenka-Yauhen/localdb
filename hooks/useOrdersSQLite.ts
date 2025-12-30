@@ -184,7 +184,7 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
                         ]);
 
                         for (const contact of order.contacts) {
-                            const contactId = contact.full_name.replace(/\s+/g, "_");
+                            const contactId: string = contact.phone;
                             await insertContactStmt.executeAsync([
                                 contactId,
                                 contact.full_name,
