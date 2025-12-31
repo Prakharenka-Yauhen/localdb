@@ -124,10 +124,6 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
                 }
             });
 
-            await database.write(async (): Promise<void> => {
-                await database.batch(...batchProducts)
-            });
-
             const usedMemory: string = await getRAMMemory();
             setRamUsage(usedMemory);
 
@@ -253,9 +249,8 @@ export const useLocalDBScreen = (): UseLocalDBScreenProps => {
             })
 
             await database.write(async (): Promise<void> => {
+                await database.batch(...batchProducts)
                 await database.batch(...batch)
-            });
-            await database.write(async (): Promise<void> => {
                 await database.batch(...batch2)
             });
             setSaveTime(Date.now() - startDB);

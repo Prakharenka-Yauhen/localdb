@@ -17,7 +17,7 @@ export const hashValues = (BEData: any): void => {
             if (Array.isArray(value)) {
                 hashedOrder[key] = [];
 
-                value.forEach(item => {
+                value.forEach((item: any): void => {
                     const hashedItem: Record<string, any> = {};
                     Object.keys(item).forEach((itemKey: string): void => {
                         hashedItem[itemKey] = hashValue(item[itemKey]);
