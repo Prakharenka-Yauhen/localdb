@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useState} from "react";
 import {Alert} from "react-native";
-import {SQLiteDatabase} from "expo-sqlite";
+import {SQLiteDatabase, SQLiteStatement} from "expo-sqlite";
 
 import {getDB} from "@/sqliteDB";
-import {getBEData, getRAMMemory, hashValues} from "@/utils";
+import {getBEData, getBELargeData, getRAMMemory, hashValues, readRNFSData} from "@/utils";
 
 type UseOrdersSQLiteProps= {
     downloadSQLiteBETime: number;
@@ -149,22 +149,22 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
             const products: any[] = objectData.products;
 
             await db.withTransactionAsync(async () => {
-                const insertOrderStmt = await db.prepareAsync(
+                const insertOrderStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`
                 );
-                const insertContractStmt = await db.prepareAsync(
+                const insertContractStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`
                 );
-                const insertContactStmt = await db.prepareAsync(
+                const insertContactStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO CONTACTS (contact_id, full_name, email, phone, company) VALUES (?, ?, ?, ?, ?)`
                 );
-                const insertOrderContactStmt = await db.prepareAsync(
+                const insertOrderContactStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`
                 );
-                const insertOrderProductStmt = await db.prepareAsync(
+                const insertOrderProductStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)`
                 );
-                const insertProductStmt = await db.prepareAsync(
+                const insertProductStmt: SQLiteStatement = await db.prepareAsync(
                     `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`
                 );
 
@@ -214,6 +214,145 @@ export const useOrdersSQLite = (): UseOrdersSQLiteProps => {
                             product.name,
                             product.recommend_price,
                         ]);
+                    }
+                } finally {
+                    await insertOrderStmt.finalizeAsync();
+                    await insertContractStmt.finalizeAsync();
+                    await insertContactStmt.finalizeAsync();
+                    await insertOrderContactStmt.finalizeAsync();
+                    await insertOrderProductStmt.finalizeAsync();
+                    await insertProductStmt.finalizeAsync();
+                }
+            });
+        } catch (e) {
+            // If withTransactionAsync fails, it rolls back automatically before entering here
+            Alert.alert('Transaction failed and was rolled back:', JSON.stringify(e));
+            throw e;
+        } finally {
+            setSaveSQLiteDBTime(Date.now() - startDB);
+        }
+    }, []);
+
+    const writeLargeOrders = useCallback(async (): Promise<void> => {
+        setDownloadSQLiteBETime(0);
+        setSaveSQLiteDBTime(0);
+        setRamSQLiteUsage('0');
+        const start: number = Date.now();
+
+        const objectData: any = await getBELargeData();
+        setDownloadSQLiteBETime(Date.now() - start);
+        setBEData(objectData);
+
+        const startDB: number = Date.now();
+        const fileSize: number = objectData.size;
+
+        try {
+            const db: SQLiteDatabase = await getDB();
+            let buffer: string = '';
+            let position: number = 0;
+            const CHUNK_SIZE: number = 1024 * 256;
+
+            await db.withTransactionAsync(async () => {
+                const insertOrderStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDERS (order_id, created_at, contact_id, contract_id) VALUES (?, ?, ?, ?)`
+                );
+                const insertContractStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO CONTRACTS (contract_id, title, signed_date) VALUES (?, ?, ?)`
+                );
+                const insertContactStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO CONTACTS (contact_id, full_name, email, phone, company) VALUES (?, ?, ?, ?, ?)`
+                );
+                const insertOrderContactStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDER_CONTACTS (order_id, contact_id) VALUES (?, ?)`
+                );
+                const insertOrderProductStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO ORDER_PRODUCTS (order_id, product_id, price, quantity) VALUES (?, ?, ?, ?)`
+                );
+                const insertProductStmt: SQLiteStatement = await db.prepareAsync(
+                    `INSERT OR REPLACE INTO PRODUCTS (product_id, name, recommend_price) VALUES (?, ?, ?)`
+                );
+
+                try {
+                    while (position < fileSize) {
+                        // Read a small chunk from the current position
+                        const chunk: string = await readRNFSData(CHUNK_SIZE, position);
+                        buffer += chunk;
+                        position += CHUNK_SIZE;
+
+                        // Logic: Extract objects between { and }
+                        // This helps identify complete JSON objects in the stream
+                        let firstBrace: number = buffer.indexOf('{');
+                        let lastBrace: number = buffer.lastIndexOf('}');
+
+                        if (firstBrace !== -1 && lastBrace > firstBrace) {
+                            // We only try to parse content that looks like a complete set of objects
+                            const extractable: string = buffer.substring(firstBrace, lastBrace + 1);
+
+                            // This regex finds individual objects { ... }
+                            const regex = /\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/g;
+                            let match;
+
+                            while ((match = regex.exec(extractable)) !== null) {
+                                const obj: any = JSON.parse(match[0]);
+
+                                // Route data to correct tables based on keys
+                                if (obj.order_id) {
+                                    await insertOrderStmt.executeAsync([
+                                        obj.order_id,
+                                        obj.created_at,
+                                        obj.contact_id,
+                                        obj.contract_id
+                                    ]);
+
+                                    if (obj.contract_agreement) {
+                                        await insertContractStmt.executeAsync([
+                                            obj.contract_agreement.contract_id,
+                                            obj.contract_agreement.title,
+                                            obj.contract_agreement.signed_date
+                                        ]);
+                                    }
+
+                                    if (obj.contacts) {
+                                        for (const contact of obj.contacts) {
+                                            const contactId: string = contact.phone;
+
+                                            await insertContactStmt.executeAsync([
+                                                contactId,
+                                                contact.full_name,
+                                                contact.email,
+                                                contact.phone,
+                                                contact.company
+                                            ]);
+
+                                            await insertOrderContactStmt.executeAsync([
+                                                obj.order_id,
+                                                contactId
+                                            ]);
+                                        }
+                                    }
+
+                                    if (obj.products_orders) {
+                                        for (const po of obj.products_orders) {
+                                            await insertOrderProductStmt.executeAsync([
+                                                obj.order_id,
+                                                po.product_id,
+                                                po.price,
+                                                po.quantity
+                                            ]);
+                                        }
+                                    }
+                                }
+                                else if (obj.product_id && obj.name) {
+                                    await insertProductStmt.executeAsync([
+                                        obj.product_id,
+                                        obj.name,
+                                        obj.recommend_price
+                                    ]);
+                                }
+                            }
+                            // Keep only the unprocessed remainder of the buffer
+                            buffer = buffer.substring(lastBrace + 1);
+                        }
                     }
                 } finally {
                     await insertOrderStmt.finalizeAsync();

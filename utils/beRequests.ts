@@ -2,24 +2,44 @@ import {Alert} from "react-native";
 import RNFS from "react-native-fs";
 import axios from "axios";
 
+const FILE_PATH = `${RNFS.DocumentDirectoryPath}/data.json`;
+const LARGE_FILE_PATH = `${RNFS.DocumentDirectoryPath}/data.json`;
+
+const URL: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com";
+const FILE_API: string = `${URL}/sync-lite`;
+const LARGE_FILE_API: string = `${URL}/sync`;
+const SEND_API: string = `${URL}/crud/test/Yauhen`;
+
+export const readRNFSData = async (chunkSize: number, position: number): Promise<any> => {
+    try {
+        return  await RNFS.read(LARGE_FILE_PATH, chunkSize, position, 'utf8');
+    } catch (e: unknown) {
+        Alert.alert('Error read RNFS data', JSON.stringify(e));
+    }
+};
+
 const getJsonData = async (): Promise<any> => {
     try {
-        const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-        const jsonString: string = await RNFS.readFile(path, 'utf8');
+        const jsonString: string = await RNFS.readFile(FILE_PATH, 'utf8');
         return JSON.parse(jsonString);
     } catch (e: unknown) {
-        Alert.alert('Error downloading BE data', JSON.stringify(e));
+        Alert.alert('Error parsing BE data', JSON.stringify(e));
+    }
+};
+
+const getJsonChunksData = async (): Promise<any> => {
+    try {
+        return await RNFS.stat(LARGE_FILE_PATH);
+    } catch (e: unknown) {
+        Alert.alert('Error parsing large BE data', JSON.stringify(e));
     }
 };
 
 export const getBEData = async (): Promise<any> => {
-    const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/sync-lite";
-    const path = `${RNFS.DocumentDirectoryPath}/data.json`;
-
     try {
         await RNFS.downloadFile({
-            fromUrl: api,
-            toFile: path,
+            fromUrl: FILE_API,
+            toFile: FILE_PATH,
         }).promise;
 
         return await getJsonData();
@@ -28,8 +48,20 @@ export const getBEData = async (): Promise<any> => {
     }
 }
 
+export const getBELargeData = async (): Promise<any> => {
+    try {
+        await RNFS.downloadFile({
+            fromUrl: LARGE_FILE_API,
+            toFile: LARGE_FILE_PATH,
+        }).promise;
+
+        return await getJsonChunksData();
+    } catch (e: unknown) {
+        Alert.alert('Error downloading BE large data', JSON.stringify(e));
+    }
+}
+
 export const sendBEData = async (): Promise<void> => {
-        const api: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com/crud/test/Yauhen";
         const mockBody =  {
             "order_id": "ORD-146afbe8-e072-4475-b493-d800446f671e",
             "created_at": "2025-09-22",
@@ -69,7 +101,7 @@ export const sendBEData = async (): Promise<void> => {
         }
 
         try {
-            await axios.post(api, {
+            await axios.post(SEND_API, {
                 body: JSON.stringify(mockBody),
             });
         } catch (error) {
