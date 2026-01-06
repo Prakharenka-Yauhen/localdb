@@ -3,7 +3,7 @@ import RNFS from "react-native-fs";
 import axios from "axios";
 
 const FILE_PATH = `${RNFS.DocumentDirectoryPath}/data.json`;
-const LARGE_FILE_PATH = `${RNFS.DocumentDirectoryPath}/data.json`;
+const LARGE_FILE_PATH = `${RNFS.DocumentDirectoryPath}/largeData.json`;
 
 const URL: string = "https://mock-backend-nest.cfapps.eu10-004.hana.ondemand.com";
 const FILE_API: string = `${URL}/sync-lite`;
