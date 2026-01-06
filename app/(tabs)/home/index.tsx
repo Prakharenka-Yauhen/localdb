@@ -63,8 +63,14 @@ export default function LocalDBScreen(): ReactElement {
         <View style={styles.horizontal}>
         <Button
             title={'Watch details'}
-            onPress={() => router.push('./home/details')}
+            onPress={() => router.push('/home/details')}
         />
+        </View>
+        <View style={styles.horizontal}>
+            <Button
+                title={'Log out'}
+                onPress={() => router.replace('/(login)')}
+            />
         </View>
         <View style={styles.horizontal}>
             <Button
