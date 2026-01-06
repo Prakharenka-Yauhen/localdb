@@ -2,66 +2,57 @@ import {ScrollView, StyleSheet, Text, View} from "react-native";
 import {JSX} from "react";
 
 import {Button} from "@/components/Button";
-import {useGetPlayers, useLocalDBScreen} from "@/hooks";
-import OrdersList from "@/app/components/OrdersList";
-import PlayersList from "@/app/components/PlayersList";
+import {useOrdersSQLite} from "@/hooks";
 import {getTimeString} from "@/utils";
 
-export default function LocalDBScreen(): JSX.Element {
-    const {getPlayers, writePlayers} = useGetPlayers();
+export default function SQLiteDBScreen(): JSX.Element {
     const {
-        downloadTime,
-        saveTime,
-        getTime,
-        hashTime,
-        ramUsage,
-        getDBData,
-        writeDBData,
-        resetDBData,
-        hashAllValues
-    } = useLocalDBScreen();
+        downloadSQLiteBETime,
+        saveSQLiteDBTime,
+        getSQLiteDBTime,
+        hashSQLiteTime,
+        ramSQLiteUsage,
+        getOrders,
+        writeOrders,
+        deleteOrdersDB,
+        hashAllSQLiteValues,
+    } = useOrdersSQLite();
 
     return <View style={styles.container}>
         <View style={styles.content}>
-            {/*<View style={styles.horizontal}>*/}
-            {/*    <Button title={'Get sport data'} onPress={getPlayers} style={styles.getButton} />*/}
-            {/*    <Button title={'Write sport data'} onPress={writePlayers} style={styles.writeButton} />*/}
-            {/*</View>*/}
-            {/*<PlayersList />*/}
             <View style={styles.horizontal}>
-                <Button title={'Write WaterDB data'} onPress={() => {
-                    writeDBData();
+                <Button title={'Write SQliteDB data'} onPress={() => {
+                    writeOrders();
                 }} style={styles.writeButton} />
-                <Button title={'Get WaterDB data'} onPress={() => {
-                    getDBData();
+                <Button title={'Get SQliteDB data'} onPress={() => {
+                    getOrders();
                 }} style={styles.getButton} />
-                <Button title={'Hash WaterDB data'} onPress={() => {
-                    hashAllValues();
+                <Button title={'Hash SQliteDB data'} onPress={() => {
+                    hashAllSQLiteValues();
                 }} style={styles.hashButton} />
             </View>
             <ScrollView contentContainerStyle={{paddingBottom: 10}}>
                 <Text style={styles.text}>
-                    {`Download time to WM: ${getTimeString(downloadTime)}`}
+                    {`Download time to SQLite: ${getTimeString(downloadSQLiteBETime)}`}
                 </Text>
                 <Text style={styles.text}>
-                    {`Save time to WM: ${getTimeString(saveTime)}`}
+                    {`Save time to SQLite: ${getTimeString(saveSQLiteDBTime)}`}
                 </Text>
                 <Text style={styles.text}>
-                    {`Get time from WM: ${getTimeString(getTime)}`}
+                    {`Get time from SQLite: ${getTimeString(getSQLiteDBTime)}`}
                 </Text>
                 <Text style={styles.text}>
-                    {`Hash WM Time: ${getTimeString(hashTime)}`}
+                    {`Hash SQLite Time: ${getTimeString(hashSQLiteTime)}`}
                 </Text>
                 <Text style={styles.text}>
-                    {`RAM WM usage: ${ramUsage}MB`}
+                    {`RAM SQLite usage: ${ramSQLiteUsage}MB`}
                 </Text>
-                {/*<OrdersList />*/}
             </ScrollView>
         </View>
         <View style={styles.horizontal}>
             <Button
                 title={'Reset DB data'}
-                onPress={resetDBData}
+                onPress={deleteOrdersDB}
                 style={styles.deleteButton}
             />
         </View>

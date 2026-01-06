@@ -6,6 +6,17 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+const tabStyle: Record<string, any> = {
+    headerTitleAlign: "center",
+    headerShown: true,
+    headerStyle: {
+        backgroundColor: 'green',
+    },
+    headerTitleStyle: {
+        color: 'white',
+    },
+}
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -19,16 +30,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-            title: 'Local DB',
-            headerTitleAlign: "center",
-            headerShown: true,
-            headerStyle: {
-                backgroundColor: 'green',
-            },
-            headerTitleStyle: {
-                color: 'white',
-            },
+            ...tabStyle,
+            title: 'Watermelon DB',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="sqlite"
+        options={{
+            ...tabStyle,
+            title: 'SQLite DB',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="berequests"
+        options={{
+            ...tabStyle,
+            title: 'BE requests',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
     </Tabs>
