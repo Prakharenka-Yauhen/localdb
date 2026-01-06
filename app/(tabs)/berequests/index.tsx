@@ -1,11 +1,11 @@
+import {ReactElement} from 'react';
 import {ScrollView, StyleSheet, Text, View} from "react-native";
-import {JSX} from "react";
 
 import {Button} from "@/components/Button";
 import {useSaveBEData} from "@/hooks";
 import {getTimeString} from "@/utils";
 
-export default function BERequestScreen(): JSX.Element {
+export default function BERequestScreen(): ReactElement {
     const {
         saveOrdersOneByOneTime,
         saveOrdersParallelTime,

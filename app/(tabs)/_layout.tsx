@@ -1,5 +1,5 @@
+import { ReactElement } from 'react';
 import { Tabs } from 'expo-router';
-import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -8,7 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const tabStyle: Record<string, any> = {
     headerTitleAlign: "center",
-    headerShown: true,
+    headerShown: false,
     headerStyle: {
         backgroundColor: 'green',
     },
@@ -17,18 +17,18 @@ const tabStyle: Record<string, any> = {
     },
 }
 
-export default function TabLayout() {
+export default function TabLayout(): ReactElement {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
+      initialRouteName={"home"}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
             ...tabStyle,
             title: 'Watermelon DB',

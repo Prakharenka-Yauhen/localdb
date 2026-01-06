@@ -1,11 +1,11 @@
+import {ReactElement} from 'react';
 import {ScrollView, StyleSheet, Text, View} from "react-native";
-import {JSX} from "react";
 
 import {Button} from "@/components/Button";
 import {useOrdersSQLite} from "@/hooks";
 import {getTimeString} from "@/utils";
 
-export default function SQLiteDBScreen(): JSX.Element {
+export default function SQLiteDBScreen(): ReactElement {
     const {
         downloadSQLiteBETime,
         saveSQLiteDBTime,

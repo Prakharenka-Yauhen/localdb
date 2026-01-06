@@ -1,13 +1,15 @@
+import {ReactElement} from 'react';
 import {ScrollView, StyleSheet, Text, View} from "react-native";
-import {JSX} from "react";
 
 import {Button} from "@/components/Button";
 import {useGetPlayers, useLocalDBScreen} from "@/hooks";
 import OrdersList from "@/app/components/OrdersList";
 import PlayersList from "@/app/components/PlayersList";
 import {getTimeString} from "@/utils";
+import {useRouter} from "expo-router";
 
-export default function LocalDBScreen(): JSX.Element {
+export default function LocalDBScreen(): ReactElement {
+    const router = useRouter();
     const {getPlayers, writePlayers} = useGetPlayers();
     const {
         downloadTime,
@@ -57,6 +59,12 @@ export default function LocalDBScreen(): JSX.Element {
                 </Text>
                 {/*<OrdersList />*/}
             </ScrollView>
+        </View>
+        <View style={styles.horizontal}>
+        <Button
+            title={'Watch details'}
+            onPress={() => router.push('./home/details')}
+        />
         </View>
         <View style={styles.horizontal}>
             <Button
