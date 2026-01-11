@@ -1,7 +1,9 @@
-import CryptoJS from "crypto-js";
+import crypto from 'react-native-quick-crypto';
 
-const hashValue = (value: any): string => {
-    return CryptoJS.SHA256(String(value)).toString(CryptoJS.enc.Hex);
+const hashValue = (value: any): Buffer<ArrayBufferLike> => {
+    return crypto.createHash('sha256')
+        .update(String(value))
+        .digest('hex');
 };
 
 export const hashValues = (BEData: any): void => {
